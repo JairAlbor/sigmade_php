@@ -39,7 +39,7 @@
             <?php } ?>
 
             <li class="nav-item active">Catalogo</li>
-            <li class="nav-item" onclick="window.location.href = 'profile.html'">
+            <li class="nav-item" onclick="window.location.href = 'profile.php'">
                 Perfil
             </li>
         </ul>

@@ -50,7 +50,7 @@
       <li class="nav-item" onclick="window.location.href = 'catalogo.php'">
         Catalogo
       </li>
-      <li class="nav-item" onclick="window.location.href = 'profile.html'">
+      <li class="nav-item" onclick="window.location.href = 'profile.php'">
         Perfil
       </li>
     </ul>
@@ -243,16 +243,16 @@
                     <tbody id="tablaUsuariosBody">
                         <?php
                         // Consulta de usuarios
-                        $sqlUsers = "SELECT id, nombre, email, rol, estado FROM usuario";
+                        $sqlUsers = "SELECT id, nombre, email, rol, estatus FROM usuario";
                         $resUsers = mysqli_query($conn, $sqlUsers);
 
                         while ($user = mysqli_fetch_assoc($resUsers)) {
-                            $claseEstado = ($user['estado'] == 'Activo') ? 'status-active' : 'status-inactive';
+                            $claseEstado = ($user['estatus'] == 'Activo') ? 'status-active' : 'status-inactive';
                             echo "<tr>";
                             echo "<td>" . htmlspecialchars($user['nombre']) . "</td>";
                             echo "<td>" . htmlspecialchars($user['email']) . "</td>";
                             echo "<td>" . htmlspecialchars($user['rol']) . "</td>";
-                            echo "<td><span class='status-pill $claseEstado'>" . $user['estado'] . "</span></td>";
+                            echo "<td><span class='status-pill $claseEstado'>" . $user['estatus'] . "</span></td>";
                             
                             // ACCIONES (Igual que en catálogo)
                             echo "<td class='actions'>";

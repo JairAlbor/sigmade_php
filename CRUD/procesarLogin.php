@@ -19,6 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Guardamos su nombre y rol en la "Sesión"
         $_SESSION['usuario_nombre'] = $datos_usuario['nombre'];
         $_SESSION['rol'] = $datos_usuario['rol'];
+        $_SESSION['user_id'] = $datos_usuario['id'];
 
     //identificamos el rol del usuario y lo redirigimos a la página correspondiente
         if ($datos_usuario['rol'] == 'Admin' || $datos_usuario['rol'] == 'Operador') {
