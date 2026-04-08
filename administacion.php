@@ -439,7 +439,7 @@
                   echo "<td>" . htmlspecialchars($user['telefono']) . "</td>";
                   echo "<td class='user-rol-cell'>" . htmlspecialchars($user['rol']) . "</td>";
                   echo "<td>";
-                  echo "<form action='CRUD/actualuzarEstatusUsuario.php' method='POST' style='display:inline;'>";
+                  echo "<form action='CRUD/actualizarEstatusUsuario.php' method='POST' style='display:inline;'>";
                   echo "<input type='hidden' name='id' value='" . $user['id'] . "'>";
                   echo "<select name='estatus' class='status-pill $claseEstatusActual' onchange='this.form.submit()'>";
                   echo "<option value='Activo' " . ($user['estatus'] == 'Activo' ? 'selected' : '') . ">Activo</option>";
@@ -674,6 +674,34 @@
       </div>
       <div class="modal-footer">
         <button class="btn-secondary" onclick="toggleModal('modalEntrenadores')">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL FINALIZAR PRÉSTAMO -->
+  <div id="modalFinalizarPrestamo" class="modal-overlay hidden">
+    <div class="modal-content modal-medium">
+      <header class="modal-header">
+        <h2><i class="fa-solid fa-check-double"></i> Finalizar Préstamo</h2>
+        <button class="close-modal-btn" onclick="toggleModal('modalFinalizarPrestamo')">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </header>
+      <div class="modal-body">
+        <div class="form-diseno">
+          <input type="hidden" id="inputFinalizarPrestamoId">
+          <div class="form-group">
+            <p>Por favor confirma la entrega del material. ¿Hay alguna observación sobre el estado del material devuelto (daños, faltantes, retrasos)?</p>
+          </div>
+          <div class="form-group">
+            <label for="textareaObservaciones">Observaciones (Opcional)</label>
+            <textarea id="textareaObservaciones" rows="4" placeholder="Todo en orden..."></textarea>
+          </div>
+          <div class="form-actions">
+            <button class="btn-secondary" onclick="toggleModal('modalFinalizarPrestamo')">Cancelar</button>
+            <button class="btn-guinda" onclick="finalizarPrestamo()">Confirmar y Finalizar</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

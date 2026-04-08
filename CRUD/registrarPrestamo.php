@@ -16,6 +16,13 @@ if (!$usuario_id || empty($materiales) || !$fecha_limite) {
 $usuario_id = mysqli_real_escape_string($conn, $usuario_id);
 $fecha_limite = mysqli_real_escape_string($conn, $fecha_limite);
 
+// Verificar si el usuario ya tiene un préstamo activo
+$check_active = mysqli_query($conn, "SELECT id FROM prestamo WHERE usuario_id = $usuario_id AND estado_general IN ('Activo', 'Prestado', 'Pendiente')");
+if (mysqli_num_rows($check_active) > 0) {
+    echo json_encode(['success' => false, 'message' => 'El usuario ya tiene un préstamo activo o pendiente. Debe finalizarlo antes de solicitar otro.']);
+    exit;
+}
+
 // Verificar que todos los materiales estén disponibles antes de insertar
 foreach ($materiales as $material_id) {
     $mid = mysqli_real_escape_string($conn, $material_id);

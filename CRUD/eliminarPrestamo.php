@@ -11,8 +11,8 @@ mysqli_query($conn, $sql_detalle);
 $sql = "DELETE FROM prestamo WHERE id = $id";
 
 if (mysqli_query($conn, $sql)) {
-    header("Location: ../index.php?msg=eliminado");
+    header("Location: ../administacion.php?msg=eliminado");
 } else {
-    header("Location: ../index.php?msg=error");
+    header("Location: ../administacion.php?msg=error");
 }
 ?>

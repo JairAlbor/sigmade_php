@@ -165,7 +165,7 @@ function actualizarTablaPrestamos(prestamos) {
         let diasClass = '';
         let diasTexto = '';
 
-        if (prestamo.estado_general === 'Entregado') {
+        if (prestamo.estado_general === 'Entregado' || prestamo.estado_general === 'Finalizado') {
             diasTexto = 'Completado';
             diasClass = 'text-success';
         } else if (prestamo.estado_general === 'Activo' || prestamo.estado_general === 'Prestado') {
@@ -201,47 +201,90 @@ function actualizarTablaPrestamos(prestamos) {
                 <td><span class="status-pill ${estadoClass}">${estadoTexto}</span></td>
                 <td class="${diasClass}">${diasTexto}</td>
                 <td class="actions">
+                    ${prestamo.estado_general === 'Pendiente' ?
+                `<button class="btn-icon" onclick="cambiarEstadoPrestamo(${prestamo.prestamo_id}, 'Aprobado')" title="Aprobar Solicitud">
+                            <i class="fa-solid fa-thumbs-up"></i>
+                        </button>
+                        <button class="btn-icon delete" onclick="cambiarEstadoPrestamo(${prestamo.prestamo_id}, 'Denegado')" title="Denegar Solicitud">
+                            <i class="fa-solid fa-thumbs-down"></i>
+                        </button>` : ''
+            }
+                    ${prestamo.estado_general === 'Aprobado' ?
+                `<button class="btn-icon entregar" onclick="cambiarEstadoPrestamo(${prestamo.prestamo_id}, 'Activo')" title="Comenzar Préstamo">
+                            <i class="fa-solid fa-play"></i>
+                        </button>` : ''
+            }
                     ${mostrarBotonEntregar ?
-                        `<button class="btn-icon entregar" onclick="entregarPrestamo(${prestamo.prestamo_id})" title="Marcar como entregado">
+                `<button class="btn-icon entregar" onclick="mostrarModalFinalizarPrestamo(${prestamo.prestamo_id})" title="Finalizar Préstamo (Entregar)">
                             <i class="fa-solid fa-check-circle"></i>
-                        </button>` :
-                        ''
-                    }
+                        </button>` : ''
+            }
                     <button class="btn-icon edit" onclick="gestionarPrestamo(${prestamo.prestamo_id})" title="Gestionar">
                         <i class="fa-solid fa-gear"></i>
                     </button>
-                    <button class="btn-icon delete" onclick="eliminarPrestamo(${prestamo.prestamo_id})" title="Eliminar">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
+                    ${prestamo.estado_general !== 'Activo' && prestamo.estado_general !== 'Pendiente' ?
+                `<button class="btn-icon delete" onclick="eliminarPrestamo(${prestamo.prestamo_id})" title="Eliminar">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>` : ''
+            }
                 </td>
             </tr>
         `;
     }).join('');
 }
 
-window.entregarPrestamo = function (id) {
-    if (confirm('¿Confirmar que los materiales han sido entregados?')) {
-        const boton = event.target.closest('.btn-icon');
-        if (boton) {
-            boton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-            boton.disabled = true;
-        }
-
-        fetch(`CRUD/entregaPrestamo.php?id=${id}`)
-            .then(response => {
-                if (response.ok) {
-                    alert('Préstamo marcado como entregado exitosamente');
+window.cambiarEstadoPrestamo = function (id, nuevoEstado) {
+    if (confirm(`¿Confirmar que desea cambiar el estado a ${nuevoEstado}?`)) {
+        fetch('CRUD/cambiarEstadoPrestamo.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: id, estado: nuevoEstado })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
                     cargarPrestamos();
                 } else {
-                    throw new Error('Error al procesar la solicitud');
+                    alert('Error: ' + data.message);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error al marcar el préstamo como entregado');
-                cargarPrestamos();
+                alert('Error al actualizar estado.');
             });
     }
+};
+
+window.mostrarModalFinalizarPrestamo = function (id) {
+    document.getElementById('inputFinalizarPrestamoId').value = id;
+    document.getElementById('textareaObservaciones').value = '';
+    toggleModal('modalFinalizarPrestamo');
+};
+
+window.finalizarPrestamo = function () {
+    const id = document.getElementById('inputFinalizarPrestamoId').value;
+    const observaciones = document.getElementById('textareaObservaciones').value;
+
+    fetch('CRUD/finalizarPrestamo.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id, observaciones: observaciones })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                toggleModal('modalFinalizarPrestamo');
+                cargarPrestamos();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al finalizar el préstamo.');
+        });
 };
 
 function obtenerClaseEstado(estado) {
@@ -251,6 +294,7 @@ function obtenerClaseEstado(estado) {
         'Vencido': 'status-inactive',
         'Entregado': 'status-returned',
         'Devuelto': 'status-returned',
+        'Finalizado': 'status-returned',
         'Renovado': 'status-renewed'
     };
     return clases[estado] || 'status-pending';
@@ -459,7 +503,7 @@ window.toggleMaterialesDropdown = function (event) {
     if (event) event.stopPropagation();
     const cuerpo = document.getElementById('dropdownMaterialesCuerpo');
     const header = document.querySelector('.custom-dropdown-header');
-    
+
     if (cuerpo && header) {
         cuerpo.classList.toggle('hidden');
         header.classList.toggle('active');
@@ -647,12 +691,12 @@ window.eliminarUsuario = function (id) {
 
 // ========== FUNCIONES PARA DISCIPLINAS ==========
 
-window.cargarDisciplinas = function() {
+window.cargarDisciplinas = function () {
     fetch('CRUD/obtenerDisciplinas.php')
         .then(response => response.json())
         .then(data => {
             const tbody = document.getElementById('tablaDisciplinasBody');
-            if(data.length === 0){
+            if (data.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">No hay disciplinas registradas</td></tr>';
                 return;
             }
@@ -673,13 +717,13 @@ window.mostrarFormularioDisciplina = function () {
     if (form) {
         form.classList.remove('hidden');
         document.getElementById('disciplinaNombre').value = '';
-        
+
         const select = document.getElementById('disciplinaEntrenador');
         select.innerHTML = '<option value="">Cargando entrenadores...</option>';
         fetch('CRUD/obtenerEntrenadores.php')
             .then(res => res.json())
             .then(entrenadores => {
-                select.innerHTML = '<option value="">Seleccione Entrenador...</option>' + 
+                select.innerHTML = '<option value="">Seleccione Entrenador...</option>' +
                     entrenadores.map(e => `<option value="${e.id}">${escapeHtml(e.nombre)}</option>`).join('');
             });
     }
@@ -709,12 +753,12 @@ window.guardarDisciplina = function () {
         method: 'POST',
         body: formData
     })
-    .then(() => {
-        alert('Disciplina guardada exitosamente');
-        ocultarFormularioDisciplina();
-        cargarDisciplinas();
-    })
-    .catch(error => alert('Error al guardar disciplina'));
+        .then(() => {
+            alert('Disciplina guardada exitosamente');
+            ocultarFormularioDisciplina();
+            cargarDisciplinas();
+        })
+        .catch(error => alert('Error al guardar disciplina'));
 };
 
 window.eliminarDisciplina = function (id) {
@@ -724,26 +768,26 @@ window.eliminarDisciplina = function (id) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id: id })
         })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                alert('Disciplina eliminada');
-                cargarDisciplinas();
-            } else {
-                alert('Error: ' + data.message);
-            }
-        });
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Disciplina eliminada');
+                    cargarDisciplinas();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            });
     }
 };
 
 // ========== FUNCIONES PARA ENTRENADORES ==========
 
-window.cargarEntrenadores = function() {
+window.cargarEntrenadores = function () {
     fetch('CRUD/obtenerEntrenadores.php')
         .then(response => response.json())
         .then(data => {
             const tbody = document.getElementById('tablaEntrenadoresBody');
-            if(data.length === 0){
+            if (data.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No hay entrenadores</td></tr>';
                 return;
             }
@@ -770,13 +814,13 @@ window.mostrarFormularioEntrenador = function () {
         fetch('CRUD/obtenerCandidatosEntrenador.php')
             .then(res => res.json())
             .then(candidatos => {
-                select.innerHTML = '<option value="">Seleccione usuario...</option>' + 
+                select.innerHTML = '<option value="">Seleccione usuario...</option>' +
                     candidatos.map(c => `<option value="${c.id}">${escapeHtml(c.nombre)} ${escapeHtml(c.apellidos || '')}</option>`).join('');
             });
     }
 };
 
-window.ocultarFormularioEntrenador = function() {
+window.ocultarFormularioEntrenador = function () {
     const form = document.getElementById('formEntrenador');
     if (form) form.classList.add('hidden');
 };
@@ -793,23 +837,23 @@ window.guardarEntrenador = function () {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: id })
     })
-    .then(res => res.json())
-    .then(data => {
-        if(data.success) {
-            alert('Usuario promovido a Entrenador exitosamente');
-            ocultarFormularioEntrenador();
-            cargarEntrenadores();
-            
-            // Actualizar tabla principal de usuarios si existe la fila
-            const filaUsuario = document.getElementById('user-row-' + id);
-            if (filaUsuario) {
-                const celdaRol = filaUsuario.querySelector('.user-rol-cell');
-                if (celdaRol) celdaRol.textContent = 'Docente';
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Usuario promovido a Entrenador exitosamente');
+                ocultarFormularioEntrenador();
+                cargarEntrenadores();
+
+                // Actualizar tabla principal de usuarios si existe la fila
+                const filaUsuario = document.getElementById('user-row-' + id);
+                if (filaUsuario) {
+                    const celdaRol = filaUsuario.querySelector('.user-rol-cell');
+                    if (celdaRol) celdaRol.textContent = 'Docente';
+                }
+            } else {
+                alert('Error: ' + data.message);
             }
-        } else {
-            alert('Error: ' + data.message);
-        }
-    });
+        });
 };
 
 window.eliminarEntrenador = function (id) {
@@ -819,22 +863,22 @@ window.eliminarEntrenador = function (id) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ id: id })
         })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                alert('Entrenador removido. Ahora tiene rol de Alumno.');
-                cargarEntrenadores();
-                
-                // Actualizar tabla principal de usuarios si existe la fila
-                const filaUsuario = document.getElementById('user-row-' + id);
-                if (filaUsuario) {
-                    const celdaRol = filaUsuario.querySelector('.user-rol-cell');
-                    if (celdaRol) celdaRol.textContent = 'Alumno';
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Entrenador removido. Ahora tiene rol de Alumno.');
+                    cargarEntrenadores();
+
+                    // Actualizar tabla principal de usuarios si existe la fila
+                    const filaUsuario = document.getElementById('user-row-' + id);
+                    if (filaUsuario) {
+                        const celdaRol = filaUsuario.querySelector('.user-rol-cell');
+                        if (celdaRol) celdaRol.textContent = 'Alumno';
+                    }
+                } else {
+                    alert('Error: ' + data.message);
                 }
-            } else {
-                alert('Error: ' + data.message);
-            }
-        });
+            });
     }
 };
 

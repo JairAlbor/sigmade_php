@@ -9,11 +9,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (saludoElemento) {
             saludoElemento.textContent = `Bienvenido, ${nombreGuardado}`;
         }
-        
+
         // Si quieres usarlo dentro de un modal específico:
         console.log("Nombre listo para usar en modales:", nombreGuardado);
     } else {
         // Si no hay nombre, quizá el usuario no se ha logueado
-      ///  window.location.href = 'login.html'; 
+        ///  window.location.href = 'login.html'; 
     }
 });

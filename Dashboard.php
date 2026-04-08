@@ -23,7 +23,7 @@
   <ul class="nav-menu">
     <li class="nav-item active">Inicio</li>
     <li class="nav-item" onclick="window.location.href='catalogo.php'">Catalogo</li>
-    <li class="nav-item" onclick="window.location.href='profile.html'">Perfil</li>
+    <li class="nav-item" onclick="window.location.href='profile.php'">Perfil</li>
   </ul>
 
   <div class="top-bar-user">

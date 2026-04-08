@@ -37,7 +37,10 @@
 $telefono = $user['telefono'];
 $creado_en = $user['created_at'];
 
-    ?>
+$query_activos = "SELECT COUNT(*) as activos FROM prestamo WHERE usuario_id = $userId AND estado_general IN ('Activo', 'Prestado', 'Pendiente')";
+$res_activos = mysqli_query($conn, $query_activos);
+$prestamos_activos = mysqli_fetch_assoc($res_activos)['activos'];
+?>
 
 
     <nav class="navbar">
@@ -115,7 +118,7 @@ $creado_en = $user['created_at'];
                 <i data-lucide="credit-card"></i>
                 <span>Préstamos activos</span>
               </div>
-              <span class="stat-value">0</span>
+              <span class="stat-value"><?php echo $prestamos_activos; ?></span>
             </div>
 
             <div class="stat-card">
@@ -138,7 +141,61 @@ $creado_en = $user['created_at'];
 
         <section class="activity-section">
           <h3>Actividad Reciente</h3>
-          <div class="activity-placeholder"></div>
+          <div class="activity-placeholder">
+            <?php
+            $query_historial = "
+                SELECT 
+                    p.id, 
+                    p.fecha_solicitud, 
+                    p.estado_general, 
+                    GROUP_CONCAT(m.nombre SEPARATOR ', ') AS materiales
+                FROM prestamo p
+                JOIN detalle_prestamo dp ON p.id = dp.prestamo_id
+                JOIN material m ON dp.material_id = m.id
+                WHERE p.usuario_id = $userId
+                GROUP BY p.id
+                ORDER BY p.fecha_solicitud DESC
+                LIMIT 5
+            ";
+            $res_historial = mysqli_query($conn, $query_historial);
+
+            if (mysqli_num_rows($res_historial) > 0) {
+                echo '<div style="display: flex; flex-direction: column; gap: 1rem;">';
+                while ($prestamo = mysqli_fetch_assoc($res_historial)) {
+                    $estado = $prestamo['estado_general'];
+                    $fecha = date("d/m/Y", strtotime($prestamo['fecha_solicitud']));
+                    $materiales = htmlspecialchars($prestamo['materiales']);
+                    
+                    // Definir color estilo pill
+                    $bg_color = '#f3f4f6';
+                    $text_color = '#4b5563';
+                    if (in_array($estado, ['Activo', 'Prestado', 'Aprobado'])) {
+                        $bg_color = '#e0e7ff';
+                        $text_color = '#4f46e5';
+                    } elseif (in_array($estado, ['Entregado', 'Finalizado', 'Devuelto'])) {
+                        $bg_color = '#dcfce7';
+                        $text_color = '#16a34a';
+                    } elseif ($estado == 'Pendiente') {
+                        $bg_color = '#fef3c7';
+                        $text_color = '#d97706';
+                    }
+
+                    echo '<div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background-color: #f9fafb; border-radius: 0.5rem; border: 1px solid #e5e7eb;">';
+                    echo '  <div style="display: flex; flex-direction: column; gap: 0.25rem;">';
+                    echo '    <strong style="color: #1f2937; font-size: 1rem;">' . $materiales . '</strong>';
+                    echo '    <span style="color: #6b7280; font-size: 0.85rem;"><i data-lucide="calendar" style="width: 14px; height: 14px; margin-right: 4px; vertical-align: text-bottom;"></i> ' . $fecha . '</span>';
+                    echo '  </div>';
+                    echo '  <div>';
+                    echo '    <span style="background-color: ' . $bg_color . '; color: ' . $text_color . '; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.85rem; font-weight: 500;">' . $estado . '</span>';
+                    echo '  </div>';
+                    echo '</div>';
+                }
+                echo '</div>';
+            } else {
+                echo '<p style="color: #6b7280; text-align: center; padding: 2rem 0;">No hay actividad reciente de préstamos.</p>';
+            }
+            ?>
+          </div>
         </section>
       </main>
     </section>

@@ -14,15 +14,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Inicializar buscadores
     inicializarBuscadores();
-    
+
     // Cargar eventos guardados
     cargarEventos();
-    
+
     // Inicializar gestión de préstamos
     if (document.getElementById('modalPrestamos')) {
         cargarPrestamos();
     }
-    
+
     // Actualizar estadísticas de la tarjeta principal
     actualizarEstadisticasDashboard();
 });
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
  * Abre o cierra un modal por su ID
  * @param {string} id - ID del modal
  */
-window.toggleModal = function(id) {
+window.toggleModal = function (id) {
     const modal = document.getElementById(id);
     if (modal) {
         // Si estamos cerrando el modal de usuarios, regresamos a la vista de tabla
@@ -51,7 +51,7 @@ window.toggleModal = function(id) {
 /**
  * Abre el modal de préstamos
  */
-window.openPrestamosModal = function() {
+window.openPrestamosModal = function () {
     const modal = document.getElementById('modalPrestamos');
     if (modal) {
         modal.classList.remove('hidden');
@@ -62,7 +62,7 @@ window.openPrestamosModal = function() {
 /**
  * Abre el modal de eventos específicamente
  */
-window.openEventModal = function() {
+window.openEventModal = function () {
     const modal = document.getElementById('modalEventos');
     if (modal) {
         modal.classList.remove('hidden');
@@ -108,14 +108,14 @@ function actualizarTablaPrestamos(prestamos) {
     tbody.innerHTML = prestamos.map(prestamo => {
         const estadoClass = obtenerClaseEstado(prestamo.estado_general);
         let estadoTexto = prestamo.estado_general;
-        
+
         // Normalizar estados
         if (estadoTexto === 'Prestado') estadoTexto = 'Activo';
-        
+
         // Determinar clase de días y texto
         let diasClass = '';
         let diasTexto = '';
-        
+
         if (prestamo.estado_general === 'Entregado') {
             diasTexto = 'Completado';
             diasClass = 'text-success';
@@ -138,10 +138,10 @@ function actualizarTablaPrestamos(prestamos) {
             diasTexto = 'Finalizado';
             diasClass = 'text-muted';
         }
-        
+
         // Determinar si mostrar botón de entregar
         const mostrarBotonEntregar = (prestamo.estado_general === 'Activo' || prestamo.estado_general === 'Prestado');
-        
+
         return `
             <tr data-estado="${prestamo.estado_general}" 
                 data-fecha-limite="${prestamo.fecha_limite || ''}"
@@ -153,12 +153,12 @@ function actualizarTablaPrestamos(prestamos) {
                 <td><span class="status-pill ${estadoClass}">${estadoTexto}</span></td>
                 <td class="${diasClass}">${diasTexto}</td>
                 <td class="actions">
-                    ${mostrarBotonEntregar ? 
-                        `<button class="btn-icon entregar" onclick="entregarPrestamo(${prestamo.prestamo_id})" title="Marcar como entregado">
+                    ${mostrarBotonEntregar ?
+                `<button class="btn-icon entregar" onclick="entregarPrestamo(${prestamo.prestamo_id})" title="Marcar como entregado">
                             <i class="fa-solid fa-check-circle"></i>
-                        </button>` : 
-                        ''
-                    }
+                        </button>` :
+                ''
+            }
                     <button class="btn-icon edit" onclick="gestionarPrestamo(${prestamo.prestamo_id})" title="Gestionar">
                         <i class="fa-solid fa-gear"></i>
                     </button>
@@ -175,7 +175,7 @@ function actualizarTablaPrestamos(prestamos) {
  * Marca un préstamo como entregado
  * @param {number} id - ID del préstamo
  */
-window.entregarPrestamo = function(id) {
+window.entregarPrestamo = function (id) {
     if (confirm('¿Confirmar que los materiales han sido entregados?')) {
         // Mostrar indicador de carga
         const boton = event.target.closest('.btn-icon');
@@ -184,7 +184,7 @@ window.entregarPrestamo = function(id) {
             boton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
             boton.disabled = true;
         }
-        
+
         // Enviar solicitud para marcar como entregado
         fetch(`CRUD/entregarPrestamo.php?id=${id}`)
             .then(response => {
@@ -235,11 +235,11 @@ function actualizarEstadisticasPrestamos(prestamos) {
         }
         return false;
     }).length;
-    
+
     const totalSpan = document.getElementById('totalPrestamos');
     const activosSpan = document.getElementById('prestamosActivos');
     const vencidosSpan = document.getElementById('prestamosVencidos');
-    
+
     if (totalSpan) totalSpan.textContent = total;
     if (activosSpan) activosSpan.textContent = activos;
     if (vencidosSpan) vencidosSpan.textContent = vencidos;
@@ -269,10 +269,10 @@ function actualizarEstadisticasDashboard() {
                 }
                 return false;
             }).length;
-            
+
             const bigNumber = document.querySelector('.big-number');
             const statusList = document.querySelector('.status-list');
-            
+
             if (bigNumber) bigNumber.textContent = activos;
             if (statusList) {
                 statusList.innerHTML = `
@@ -288,10 +288,10 @@ function actualizarEstadisticasDashboard() {
  * Gestiona un préstamo específico (menú de opciones)
  * @param {number} id - ID del préstamo
  */
-window.gestionarPrestamo = function(id) {
+window.gestionarPrestamo = function (id) {
     const accion = prompt('¿Qué acción desea realizar?\n1 - Ver detalles\n2 - Renovar préstamo\n3 - Aplicar sanción\n\nIngrese el número de la acción:', '1');
-    
-    switch(accion) {
+
+    switch (accion) {
         case '1':
             verDetallePrestamo(id);
             break;
@@ -332,7 +332,7 @@ function verDetallePrestamo(id) {
  * Elimina un préstamo
  * @param {number} id - ID del préstamo
  */
-window.eliminarPrestamo = function(id) {
+window.eliminarPrestamo = function (id) {
     if (confirm('¿Está seguro de eliminar este préstamo? Esta acción no se puede deshacer.')) {
         window.location.href = `CRUD/eliminarPrestamo.php?id=${id}`;
     }
@@ -341,10 +341,10 @@ window.eliminarPrestamo = function(id) {
 /**
  * Muestra el formulario para nuevo préstamo
  */
-window.mostrarFormularioPrestamo = function() {
+window.mostrarFormularioPrestamo = function () {
     cargarUsuariosParaSelect();
     cargarMaterialesParaSelect();
-    
+
     const fechaInput = document.getElementById('fechaLimite');
     if (fechaInput) {
         const hoy = new Date();
@@ -352,7 +352,7 @@ window.mostrarFormularioPrestamo = function() {
         fechaLimite.setDate(hoy.getDate() + 7);
         fechaInput.value = fechaLimite.toISOString().split('T')[0];
     }
-    
+
     toggleModal('modalFormPrestamo');
 };
 
@@ -362,7 +362,7 @@ window.mostrarFormularioPrestamo = function() {
 function cargarUsuariosParaSelect() {
     const select = document.getElementById('usuarioPrestamo');
     if (!select) return;
-    
+
     fetch('CRUD/obtenerUsuariosActivos.php')
         .then(response => response.json())
         .then(usuarios => {
@@ -380,7 +380,7 @@ function cargarUsuariosParaSelect() {
 function cargarMaterialesParaSelect() {
     const select = document.getElementById('materialPrestamo');
     if (!select) return;
-    
+
     fetch('CRUD/obtenerMaterialesDisponibles.php')
         .then(response => response.json())
         .then(materiales => {
@@ -397,53 +397,53 @@ function cargarMaterialesParaSelect() {
 document.addEventListener('DOMContentLoaded', () => {
     const formPrestamo = document.getElementById('formNuevoPrestamo');
     if (formPrestamo) {
-        formPrestamo.addEventListener('submit', function(e) {
+        formPrestamo.addEventListener('submit', function (e) {
             e.preventDefault();
-            
+
             const usuarioId = document.getElementById('usuarioPrestamo').value;
             const materialSelect = document.getElementById('materialPrestamo');
             const materialesSeleccionados = Array.from(materialSelect.selectedOptions).map(opt => opt.value);
             const fechaLimite = document.getElementById('fechaLimite').value;
-            
+
             if (!usuarioId) {
                 alert('Por favor seleccione un usuario');
                 return;
             }
-            
+
             if (materialesSeleccionados.length === 0) {
                 alert('Por favor seleccione al menos un material');
                 return;
             }
-            
+
             if (!fechaLimite) {
                 alert('Por favor seleccione una fecha límite');
                 return;
             }
-            
+
             // Enviar datos al servidor
             const formData = new FormData();
             formData.append('usuario_id', usuarioId);
             materialesSeleccionados.forEach(m => formData.append('materiales[]', m));
             formData.append('fecha_limite', fechaLimite);
-            
+
             fetch('CRUD/registrarPrestamo.php', {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Préstamo registrado exitosamente');
-                    toggleModal('modalFormPrestamo');
-                    cargarPrestamos();
-                } else {
-                    alert('Error al registrar el préstamo: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al registrar el préstamo');
-            });
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Préstamo registrado exitosamente');
+                        toggleModal('modalFormPrestamo');
+                        cargarPrestamos();
+                    } else {
+                        alert('Error al registrar el préstamo: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al registrar el préstamo');
+                });
         });
     }
 });
@@ -456,19 +456,19 @@ function filtrarPrestamos() {
     const estadoFiltro = document.getElementById('filtroEstadoPrestamo')?.value || '';
     const fechaInicio = document.getElementById('filtroFechaInicio')?.value;
     const fechaFin = document.getElementById('filtroFechaFin')?.value;
-    
+
     const filas = document.querySelectorAll('#tablaPrestamosBody tr');
-    
+
     if (filas.length === 1 && (filas[0].innerText.includes('No hay préstamos') || filas[0].innerText.includes('Error'))) return;
-    
+
     filas.forEach(fila => {
         let mostrar = true;
         const textoFila = fila.textContent.toLowerCase();
-        
+
         if (busqueda && !textoFila.includes(busqueda)) {
             mostrar = false;
         }
-        
+
         if (mostrar && estadoFiltro) {
             const estadoCelda = fila.querySelector('.status-pill');
             let estadoTexto = estadoCelda ? estadoCelda.textContent : '';
@@ -476,7 +476,7 @@ function filtrarPrestamos() {
                 mostrar = false;
             }
         }
-        
+
         if (mostrar && (fechaInicio || fechaFin)) {
             const fechaLimite = fila.dataset.fechaLimite;
             if (fechaLimite) {
@@ -484,7 +484,7 @@ function filtrarPrestamos() {
                 if (fechaFin && fechaLimite > fechaFin) mostrar = false;
             }
         }
-        
+
         fila.style.display = mostrar ? '' : 'none';
     });
 }
@@ -492,7 +492,7 @@ function filtrarPrestamos() {
 /**
  * Muestra/oculta los filtros avanzados
  */
-window.toggleFiltrosPrestamos = function() {
+window.toggleFiltrosPrestamos = function () {
     const filtros = document.getElementById('filtrosPrestamos');
     if (filtros) {
         filtros.classList.toggle('hidden');
@@ -502,17 +502,17 @@ window.toggleFiltrosPrestamos = function() {
 /**
  * Limpia todos los filtros de préstamos
  */
-window.limpiarFiltrosPrestamos = function() {
+window.limpiarFiltrosPrestamos = function () {
     const busqueda = document.getElementById('buscarPrestamo');
     const estadoFiltro = document.getElementById('filtroEstadoPrestamo');
     const fechaInicio = document.getElementById('filtroFechaInicio');
     const fechaFin = document.getElementById('filtroFechaFin');
-    
+
     if (busqueda) busqueda.value = '';
     if (estadoFiltro) estadoFiltro.value = '';
     if (fechaInicio) fechaInicio.value = '';
     if (fechaFin) fechaFin.value = '';
-    
+
     const filas = document.querySelectorAll('#tablaPrestamosBody tr');
     filas.forEach(fila => {
         fila.style.display = '';
@@ -524,7 +524,7 @@ window.limpiarFiltrosPrestamos = function() {
 /**
  * Muestra u oculta el formulario de eventos
  */
-window.toggleFormEventos = function() {
+window.toggleFormEventos = function () {
     const form = document.getElementById('addEventForm');
     if (form) {
         form.classList.toggle('hidden');
@@ -541,7 +541,7 @@ window.toggleFormEventos = function() {
 /**
  * Guarda un nuevo evento
  */
-window.saveEvent = function() {
+window.saveEvent = function () {
     const titulo = document.getElementById('eventTitle').value;
     const ubicacion = document.getElementById('eventLocation').value;
     const fecha = document.getElementById('eventDate').value;
@@ -580,7 +580,7 @@ function cargarEventos() {
     if (!container) return;
 
     const eventos = JSON.parse(localStorage.getItem('eventos') || '[]');
-    
+
     if (eventos.length === 0) {
         container.innerHTML = '<p style="text-align: center; color: #666;">No hay eventos registrados</p>';
         return;
@@ -605,7 +605,7 @@ function cargarEventos() {
  * Elimina un evento por ID
  * @param {number} id - ID del evento
  */
-window.eliminarEvento = function(id) {
+window.eliminarEvento = function (id) {
     if (confirm('¿Estás seguro de eliminar este evento?')) {
         let eventos = JSON.parse(localStorage.getItem('eventos') || '[]');
         eventos = eventos.filter(e => e.id !== id);
@@ -620,7 +620,7 @@ window.eliminarEvento = function(id) {
 /**
  * Muestra el formulario de edición de usuario
  */
-window.mostrarFormularioEditar = function(id, nombre, email, rol) {
+window.mostrarFormularioEditar = function (id, nombre, email, rol) {
     const inputId = document.getElementById('edit_id_usuario');
     const inputNombre = document.getElementById('edit_nombre');
     const inputEmail = document.getElementById('edit_email');
@@ -633,7 +633,7 @@ window.mostrarFormularioEditar = function(id, nombre, email, rol) {
 
     document.getElementById('vistaTablaUsuarios').classList.add('hidden');
     document.getElementById('vistaFormularioUsuario').classList.remove('hidden');
-    
+
     const titulo = document.getElementById('tituloModalUsuarios');
     if (titulo) titulo.innerHTML = '<i class="fa-solid fa-user-pen"></i> Editar Usuario';
 };
@@ -641,7 +641,7 @@ window.mostrarFormularioEditar = function(id, nombre, email, rol) {
 /**
  * Muestra el formulario de registro de usuario
  */
-window.mostrarFormularioRegistro = function() {
+window.mostrarFormularioRegistro = function () {
     document.getElementById('vistaTablaUsuarios').classList.add('hidden');
     document.getElementById('vistaRegistroUsuario').classList.remove('hidden');
     document.getElementById('tituloModalUsuarios').innerHTML = '<i class="fa-solid fa-user-plus"></i> Nuevo Registro';
@@ -650,15 +650,15 @@ window.mostrarFormularioRegistro = function() {
 /**
  * Muestra la vista de tabla de usuarios
  */
-window.mostrarTablaUsuarios = function() {
+window.mostrarTablaUsuarios = function () {
     const vistaFormulario = document.getElementById('vistaFormularioUsuario');
     const vistaRegistro = document.getElementById('vistaRegistroUsuario');
     const vistaTabla = document.getElementById('vistaTablaUsuarios');
-    
+
     if (vistaFormulario) vistaFormulario.classList.add('hidden');
     if (vistaRegistro) vistaRegistro.classList.add('hidden');
     if (vistaTabla) vistaTabla.classList.remove('hidden');
-    
+
     const titulo = document.getElementById('tituloModalUsuarios');
     if (titulo) titulo.innerHTML = '<i class="fa-solid fa-users-gear"></i> Usuarios Registrados';
 };
@@ -667,7 +667,7 @@ window.mostrarTablaUsuarios = function() {
  * Elimina un usuario
  * @param {number} id - ID del usuario
  */
-window.eliminarUsuario = function(id) {
+window.eliminarUsuario = function (id) {
     if (confirm('¿Estás seguro de eliminar este usuario?')) {
         window.location.href = `CRUD/eliminarUsuario.php?id=${id}`;
     }
@@ -678,7 +678,7 @@ window.eliminarUsuario = function(id) {
 /**
  * Muestra el formulario para agregar disciplina
  */
-window.mostrarFormularioDisciplina = function() {
+window.mostrarFormularioDisciplina = function () {
     const form = document.getElementById('formDisciplina');
     if (form) {
         form.classList.remove('hidden');
@@ -690,7 +690,7 @@ window.mostrarFormularioDisciplina = function() {
 /**
  * Oculta el formulario de disciplina
  */
-window.ocultarFormularioDisciplina = function() {
+window.ocultarFormularioDisciplina = function () {
     const form = document.getElementById('formDisciplina');
     if (form) {
         form.classList.add('hidden');
@@ -700,7 +700,7 @@ window.ocultarFormularioDisciplina = function() {
 /**
  * Guarda una nueva disciplina
  */
-window.guardarDisciplina = function() {
+window.guardarDisciplina = function () {
     const nombre = document.getElementById('disciplinaNombre').value;
     const entrenador = document.getElementById('disciplinaEntrenador').value;
 
@@ -711,7 +711,7 @@ window.guardarDisciplina = function() {
 
     const tabla = document.getElementById('tablaDisciplinasBody');
     const nuevaFila = document.createElement('tr');
-    
+
     nuevaFila.innerHTML = `
         <td>${escapeHtml(nombre)}</td>
         <td>${escapeHtml(entrenador || 'Por Asignar')}</td>
@@ -721,7 +721,7 @@ window.guardarDisciplina = function() {
             <button class="btn-icon delete" onclick="eliminarDisciplina(this)"><i class="fa-regular fa-trash-can"></i></button>
         </td>
     `;
-    
+
     tabla.appendChild(nuevaFila);
     ocultarFormularioDisciplina();
     alert('Disciplina agregada exitosamente');
@@ -731,16 +731,16 @@ window.guardarDisciplina = function() {
  * Edita una disciplina existente
  * @param {HTMLElement} btn - Botón que disparó la acción
  */
-window.editarDisciplina = function(btn) {
+window.editarDisciplina = function (btn) {
     const fila = btn.closest('tr');
     const nombreCelda = fila.cells[0];
     const entrenadorCelda = fila.cells[1];
-    
+
     const nuevoNombre = prompt('Editar nombre de la disciplina:', nombreCelda.textContent);
     if (nuevoNombre && nuevoNombre.trim()) {
         nombreCelda.textContent = nuevoNombre.trim();
     }
-    
+
     const nuevoEntrenador = prompt('Editar entrenador:', entrenadorCelda.textContent);
     if (nuevoEntrenador !== null) {
         entrenadorCelda.textContent = nuevoEntrenador || 'Por Asignar';
@@ -751,7 +751,7 @@ window.editarDisciplina = function(btn) {
  * Elimina una disciplina
  * @param {HTMLElement} btn - Botón que disparó la acción
  */
-window.eliminarDisciplina = function(btn) {
+window.eliminarDisciplina = function (btn) {
     if (confirm('¿Estás seguro de eliminar esta disciplina?')) {
         const fila = btn.closest('tr');
         fila.remove();
@@ -764,12 +764,12 @@ window.eliminarDisciplina = function(btn) {
 /**
  * Muestra formulario para agregar entrenador
  */
-window.mostrarFormularioEntrenador = function() {
+window.mostrarFormularioEntrenador = function () {
     const nombre = prompt('Nombre del entrenador:');
     if (nombre) {
         const especialidad = prompt('Especialidad:');
         const contacto = prompt('Email de contacto:');
-        
+
         const tabla = document.getElementById('tablaEntrenadoresBody');
         const nuevaFila = document.createElement('tr');
         nuevaFila.innerHTML = `
@@ -791,24 +791,24 @@ window.mostrarFormularioEntrenador = function() {
  * Edita un entrenador
  * @param {HTMLElement} btn - Botón que disparó la acción
  */
-window.editarEntrenador = function(btn) {
+window.editarEntrenador = function (btn) {
     const fila = btn.closest('tr');
     if (!fila) return;
-    
+
     const nombreCelda = fila.cells[0];
     const especialidadCelda = fila.cells[1];
     const contactoCelda = fila.cells[2];
-    
+
     const nuevoNombre = prompt('Editar nombre:', nombreCelda.textContent);
     if (nuevoNombre && nuevoNombre.trim()) {
         nombreCelda.textContent = nuevoNombre.trim();
     }
-    
+
     const nuevaEspecialidad = prompt('Editar especialidad:', especialidadCelda.textContent);
     if (nuevaEspecialidad !== null) {
         especialidadCelda.textContent = nuevaEspecialidad || 'Por definir';
     }
-    
+
     const nuevoContacto = prompt('Editar contacto:', contactoCelda.textContent);
     if (nuevoContacto !== null) {
         contactoCelda.textContent = nuevoContacto || 'No especificado';
@@ -819,7 +819,7 @@ window.editarEntrenador = function(btn) {
  * Elimina un entrenador
  * @param {HTMLElement} btn - Botón que disparó la acción
  */
-window.eliminarEntrenador = function(btn) {
+window.eliminarEntrenador = function (btn) {
     if (confirm('¿Estás seguro de eliminar este entrenador?')) {
         const fila = btn.closest('tr');
         if (fila) {
@@ -844,7 +844,7 @@ function inicializarBuscadores() {
             filtrarFilas(filasUsuarios, valor);
         });
     }
-    
+
     // Buscador de disciplinas
     const inputBusquedaDisciplina = document.getElementById('buscarDisciplina');
     if (inputBusquedaDisciplina) {
@@ -854,7 +854,7 @@ function inicializarBuscadores() {
             filtrarFilas(filasDisciplinas, valor);
         });
     }
-    
+
     // Buscador de préstamos
     const inputBusquedaPrestamo = document.getElementById('buscarPrestamo');
     if (inputBusquedaPrestamo) {
@@ -862,7 +862,7 @@ function inicializarBuscadores() {
             filtrarPrestamos();
         });
     }
-    
+
     // Buscador de entrenadores
     const inputBusquedaEntrenador = document.getElementById('buscarEntrenador');
     if (inputBusquedaEntrenador) {
