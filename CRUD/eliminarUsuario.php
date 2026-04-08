@@ -1,14 +1,21 @@
 <?php
+include('conexion.php');
 
-//codigo para eliminar un usuario de la base de datos, se recibe el id del usuario a eliminar por POST desde el archivo administacion.php, luego se ejecuta la consulta para eliminarlo y se redirige de vuelta a la página de administración
-include("conexion.php");
-if (isset($_GET['id'])) {
-    $id = mysqli_real_escape_string($conn, $_GET['id']);
-    $sqlDelete = "DELETE FROM usuario WHERE id = '$id'";
+$id = $_GET['id'];
 
-    mysqli_query($conn, $sqlDelete);
+// Verificar si el usuario tiene préstamos activos
+$sql_check = "SELECT COUNT(*) as total FROM prestamo WHERE usuario_id = $id AND estado_general IN ('Activo', 'Prestado')";
+$result = mysqli_query($conn, $sql_check);
+$row = mysqli_fetch_assoc($result);
 
-    // Redirigir de vuelta a la página de administración
-    header("Location: ../administacion.php");
-    exit();
+if ($row['total'] > 0) {
+    header("Location: ../index.php?msg=usuario_con_prestamos");
+} else {
+    $sql = "DELETE FROM usuario WHERE id = $id";
+    if (mysqli_query($conn, $sql)) {
+        header("Location: ../index.php?msg=usuario_eliminado");
+    } else {
+        header("Location: ../index.php?msg=error");
+    }
 }
+?>

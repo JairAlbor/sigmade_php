@@ -5,53 +5,114 @@
 
 // ========== INICIALIZACIÓN ==========
 document.addEventListener('DOMContentLoaded', () => {
-    // Recuperar nombre de usuario
     const nombreGuardado = localStorage.getItem('nombreUsuario');
     const saludoElemento = document.getElementById('userName');
     if (nombreGuardado && saludoElemento) {
         saludoElemento.textContent = `Bienvenido, ${nombreGuardado}`;
     }
 
-    // Inicializar buscadores
     inicializarBuscadores();
-    
-    // Cargar eventos guardados
     cargarEventos();
-    
-    // Inicializar gestión de préstamos
+
     if (document.getElementById('modalPrestamos')) {
         cargarPrestamos();
     }
-    
-    // Actualizar estadísticas de la tarjeta principal
+
     actualizarEstadisticasDashboard();
+
+    // Buscador de materiales dentro del formulario
+    document.addEventListener('keyup', (e) => {
+        if (e.target && e.target.id === 'buscarMaterial') {
+            const valor = e.target.value.toLowerCase();
+            document.querySelectorAll('.material-check-item').forEach(item => {
+                const texto = item.textContent.toLowerCase();
+                item.classList.toggle('oculto', !texto.includes(valor));
+            });
+        }
+    });
+
+    // Cerrar dropdown de materiales al hacer clic fuera
+    document.addEventListener('click', (e) => {
+        const dropdown = document.getElementById('dropdownMateriales');
+        if (dropdown && !dropdown.contains(e.target)) {
+            document.getElementById('dropdownMaterialesCuerpo')?.classList.add('hidden');
+            document.querySelector('.custom-dropdown-header')?.classList.remove('active');
+        }
+    });
+
+    // Submit del formulario de préstamo
+    const formPrestamo = document.getElementById('formNuevoPrestamo');
+    if (formPrestamo) {
+        formPrestamo.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const usuarioId = document.getElementById('usuarioPrestamo').value;
+            const checkboxes = document.querySelectorAll('#listaMateriales input[type="checkbox"]:checked');
+            const materialesSeleccionados = Array.from(checkboxes).map(cb => cb.value);
+            const fechaLimite = document.getElementById('fechaLimite').value;
+
+            if (!usuarioId) {
+                alert('Por favor seleccione un usuario');
+                return;
+            }
+            if (materialesSeleccionados.length === 0) {
+                alert('Por favor seleccione al menos un material');
+                return;
+            }
+            if (!fechaLimite) {
+                alert('Por favor seleccione una fecha límite');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('usuario_id', usuarioId);
+            materialesSeleccionados.forEach(m => formData.append('materiales[]', m));
+            formData.append('fecha_limite', fechaLimite);
+
+            fetch('CRUD/registrarPrestamo.php', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Préstamo registrado exitosamente');
+                        toggleModal('modalFormPrestamo');
+                        cargarPrestamos();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error al registrar el préstamo');
+                });
+        });
+    }
 });
 
 // ========== FUNCIONES DE MODALES ==========
 
-/**
- * Abre o cierra un modal por su ID
- * @param {string} id - ID del modal
- */
-window.toggleModal = function(id) {
+window.toggleModal = function (id) {
     const modal = document.getElementById(id);
     if (modal) {
-        // Si estamos cerrando el modal de usuarios, regresamos a la vista de tabla
         if (id === 'modalUsuarios' && !modal.classList.contains('hidden')) {
             mostrarTablaUsuarios();
         }
-        // Si estamos cerrando el modal de préstamos, recargar datos
         if (id === 'modalPrestamos' && !modal.classList.contains('hidden')) {
             cargarPrestamos();
+        }
+        if (id === 'modalDisciplinas' && modal.classList.contains('hidden')) {
+            cargarDisciplinas();
+        }
+        if (id === 'modalEntrenadores' && modal.classList.contains('hidden')) {
+            cargarEntrenadores();
         }
         modal.classList.toggle('hidden');
     }
 };
 
-/**
- * Abre el modal de préstamos
- */
-window.openPrestamosModal = function() {
+window.openPrestamosModal = function () {
     const modal = document.getElementById('modalPrestamos');
     if (modal) {
         modal.classList.remove('hidden');
@@ -59,10 +120,7 @@ window.openPrestamosModal = function() {
     }
 };
 
-/**
- * Abre el modal de eventos específicamente
- */
-window.openEventModal = function() {
+window.openEventModal = function () {
     const modal = document.getElementById('modalEventos');
     if (modal) {
         modal.classList.remove('hidden');
@@ -72,9 +130,6 @@ window.openEventModal = function() {
 
 // ========== FUNCIONES PARA PRÉSTAMOS ==========
 
-/**
- * Carga los préstamos desde el servidor usando la sentencia SQL
- */
 function cargarPrestamos() {
     fetch('CRUD/obtenerPrestamos.php')
         .then(response => response.json())
@@ -92,10 +147,6 @@ function cargarPrestamos() {
         });
 }
 
-/**
- * Actualiza la tabla de préstamos con los datos recibidos
- * @param {Array} prestamos - Lista de préstamos
- */
 function actualizarTablaPrestamos(prestamos) {
     const tbody = document.getElementById('tablaPrestamosBody');
     if (!tbody) return;
@@ -108,14 +159,12 @@ function actualizarTablaPrestamos(prestamos) {
     tbody.innerHTML = prestamos.map(prestamo => {
         const estadoClass = obtenerClaseEstado(prestamo.estado_general);
         let estadoTexto = prestamo.estado_general;
-        
-        // Normalizar estados
+
         if (estadoTexto === 'Prestado') estadoTexto = 'Activo';
-        
-        // Determinar clase de días y texto
+
         let diasClass = '';
         let diasTexto = '';
-        
+
         if (prestamo.estado_general === 'Entregado') {
             diasTexto = 'Completado';
             diasClass = 'text-success';
@@ -138,10 +187,9 @@ function actualizarTablaPrestamos(prestamos) {
             diasTexto = 'Finalizado';
             diasClass = 'text-muted';
         }
-        
-        // Determinar si mostrar botón de entregar
+
         const mostrarBotonEntregar = (prestamo.estado_general === 'Activo' || prestamo.estado_general === 'Prestado');
-        
+
         return `
             <tr data-estado="${prestamo.estado_general}" 
                 data-fecha-limite="${prestamo.fecha_limite || ''}"
@@ -153,10 +201,10 @@ function actualizarTablaPrestamos(prestamos) {
                 <td><span class="status-pill ${estadoClass}">${estadoTexto}</span></td>
                 <td class="${diasClass}">${diasTexto}</td>
                 <td class="actions">
-                    ${mostrarBotonEntregar ? 
+                    ${mostrarBotonEntregar ?
                         `<button class="btn-icon entregar" onclick="entregarPrestamo(${prestamo.prestamo_id})" title="Marcar como entregado">
                             <i class="fa-solid fa-check-circle"></i>
-                        </button>` : 
+                        </button>` :
                         ''
                     }
                     <button class="btn-icon edit" onclick="gestionarPrestamo(${prestamo.prestamo_id})" title="Gestionar">
@@ -171,22 +219,15 @@ function actualizarTablaPrestamos(prestamos) {
     }).join('');
 }
 
-/**
- * Marca un préstamo como entregado
- * @param {number} id - ID del préstamo
- */
-window.entregarPrestamo = function(id) {
+window.entregarPrestamo = function (id) {
     if (confirm('¿Confirmar que los materiales han sido entregados?')) {
-        // Mostrar indicador de carga
         const boton = event.target.closest('.btn-icon');
         if (boton) {
-            const originalHtml = boton.innerHTML;
             boton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
             boton.disabled = true;
         }
-        
-        // Enviar solicitud para marcar como entregado
-        fetch(`CRUD/entregarPrestamo.php?id=${id}`)
+
+        fetch(`CRUD/entregaPrestamo.php?id=${id}`)
             .then(response => {
                 if (response.ok) {
                     alert('Préstamo marcado como entregado exitosamente');
@@ -203,11 +244,6 @@ window.entregarPrestamo = function(id) {
     }
 };
 
-/**
- * Obtiene la clase CSS según el estado del préstamo
- * @param {string} estado - Estado del préstamo
- * @returns {string} Clase CSS
- */
 function obtenerClaseEstado(estado) {
     const clases = {
         'Activo': 'status-active',
@@ -220,34 +256,25 @@ function obtenerClaseEstado(estado) {
     return clases[estado] || 'status-pending';
 }
 
-/**
- * Actualiza las tarjetas de estadísticas de préstamos en el modal
- * @param {Array} prestamos - Lista de préstamos
- */
 function actualizarEstadisticasPrestamos(prestamos) {
     const total = prestamos.length;
     const activos = prestamos.filter(p => p.estado_general === 'Activo' || p.estado_general === 'Prestado').length;
     const vencidos = prestamos.filter(p => {
         if (p.estado_general === 'Activo' || p.estado_general === 'Prestado') {
-            const fechaLimite = new Date(p.fecha_limite);
-            const hoy = new Date();
-            return fechaLimite < hoy;
+            return new Date(p.fecha_limite) < new Date();
         }
         return false;
     }).length;
-    
+
     const totalSpan = document.getElementById('totalPrestamos');
     const activosSpan = document.getElementById('prestamosActivos');
     const vencidosSpan = document.getElementById('prestamosVencidos');
-    
+
     if (totalSpan) totalSpan.textContent = total;
     if (activosSpan) activosSpan.textContent = activos;
     if (vencidosSpan) vencidosSpan.textContent = vencidos;
 }
 
-/**
- * Actualiza las estadísticas en el dashboard principal
- */
 function actualizarEstadisticasDashboard() {
     fetch('CRUD/obtenerPrestamos.php')
         .then(response => response.json())
@@ -255,24 +282,20 @@ function actualizarEstadisticasDashboard() {
             const activos = prestamos.filter(p => p.estado_general === 'Activo' || p.estado_general === 'Prestado').length;
             const vencidos = prestamos.filter(p => {
                 if (p.estado_general === 'Activo' || p.estado_general === 'Prestado') {
-                    const fechaLimite = new Date(p.fecha_limite);
-                    const hoy = new Date();
-                    return fechaLimite < hoy;
+                    return new Date(p.fecha_limite) < new Date();
                 }
                 return false;
             }).length;
             const vencenHoy = prestamos.filter(p => {
                 if (p.estado_general === 'Activo' || p.estado_general === 'Prestado') {
-                    const fechaLimite = new Date(p.fecha_limite);
-                    const hoy = new Date();
-                    return fechaLimite.toDateString() === hoy.toDateString();
+                    return new Date(p.fecha_limite).toDateString() === new Date().toDateString();
                 }
                 return false;
             }).length;
-            
+
             const bigNumber = document.querySelector('.big-number');
             const statusList = document.querySelector('.status-list');
-            
+
             if (bigNumber) bigNumber.textContent = activos;
             if (statusList) {
                 statusList.innerHTML = `
@@ -284,14 +307,10 @@ function actualizarEstadisticasDashboard() {
         .catch(error => console.error('Error al actualizar dashboard:', error));
 }
 
-/**
- * Gestiona un préstamo específico (menú de opciones)
- * @param {number} id - ID del préstamo
- */
-window.gestionarPrestamo = function(id) {
+window.gestionarPrestamo = function (id) {
     const accion = prompt('¿Qué acción desea realizar?\n1 - Ver detalles\n2 - Renovar préstamo\n3 - Aplicar sanción\n\nIngrese el número de la acción:', '1');
-    
-    switch(accion) {
+
+    switch (accion) {
         case '1':
             verDetallePrestamo(id);
             break;
@@ -312,10 +331,6 @@ window.gestionarPrestamo = function(id) {
     }
 };
 
-/**
- * Ver detalle de un préstamo específico
- * @param {number} id - ID del préstamo
- */
 function verDetallePrestamo(id) {
     fetch(`CRUD/obtenerDetallePrestamo.php?id=${id}`)
         .then(response => response.json())
@@ -328,23 +343,18 @@ function verDetallePrestamo(id) {
         });
 }
 
-/**
- * Elimina un préstamo
- * @param {number} id - ID del préstamo
- */
-window.eliminarPrestamo = function(id) {
+window.eliminarPrestamo = function (id) {
     if (confirm('¿Está seguro de eliminar este préstamo? Esta acción no se puede deshacer.')) {
         window.location.href = `CRUD/eliminarPrestamo.php?id=${id}`;
     }
 };
 
-/**
- * Muestra el formulario para nuevo préstamo
- */
-window.mostrarFormularioPrestamo = function() {
+// ========== FORMULARIO NUEVO PRÉSTAMO ==========
+
+window.mostrarFormularioPrestamo = function () {
     cargarUsuariosParaSelect();
     cargarMaterialesParaSelect();
-    
+
     const fechaInput = document.getElementById('fechaLimite');
     if (fechaInput) {
         const hoy = new Date();
@@ -352,17 +362,16 @@ window.mostrarFormularioPrestamo = function() {
         fechaLimite.setDate(hoy.getDate() + 7);
         fechaInput.value = fechaLimite.toISOString().split('T')[0];
     }
-    
+
     toggleModal('modalFormPrestamo');
 };
 
-/**
- * Carga los usuarios en el select del formulario
- */
 function cargarUsuariosParaSelect() {
     const select = document.getElementById('usuarioPrestamo');
     if (!select) return;
-    
+
+    select.innerHTML = '<option value="">Cargando usuarios...</option>';
+
     fetch('CRUD/obtenerUsuariosActivos.php')
         .then(response => response.json())
         .then(usuarios => {
@@ -370,113 +379,114 @@ function cargarUsuariosParaSelect() {
                 usuarios.map(u => `<option value="${u.id}">${escapeHtml(u.nombre)}</option>`).join('');
         })
         .catch(() => {
-            select.innerHTML = '<option value="">Seleccione un usuario</option>';
+            select.innerHTML = '<option value="">Error al cargar usuarios</option>';
         });
 }
 
 /**
- * Carga los materiales en el select del formulario
+ * Carga los materiales disponibles como checkboxes
  */
 function cargarMaterialesParaSelect() {
-    const select = document.getElementById('materialPrestamo');
-    if (!select) return;
-    
+    const lista = document.getElementById('listaMateriales');
+    if (!lista) return;
+
+    lista.innerHTML = '<p style="padding:10px; color:#888;">Cargando materiales...</p>';
+
+    // Limpiar resumen
+    const resumen = document.getElementById('resumenSeleccion');
+    if (resumen) resumen.classList.add('hidden');
+
+    // Limpiar buscador
+    const buscar = document.getElementById('buscarMaterial');
+    if (buscar) buscar.value = '';
+
     fetch('CRUD/obtenerMaterialesDisponibles.php')
         .then(response => response.json())
         .then(materiales => {
-            select.innerHTML = materiales.map(m => `<option value="${m.id}">${escapeHtml(m.nombre)}</option>`).join('');
+            if (materiales.length === 0) {
+                lista.innerHTML = '<p style="padding:10px; color:#888; text-align:center;"><i class="fa-solid fa-box-open"></i> No hay materiales disponibles en este momento.</p>';
+                return;
+            }
+
+            lista.innerHTML = materiales.map(m => `
+                <div class="material-check-item" id="item-${m.id}">
+                    <input 
+                        type="checkbox" 
+                        id="mat-${m.id}" 
+                        name="materiales[]" 
+                        value="${m.id}"
+                        onchange="actualizarResumenSeleccion()"
+                    >
+                    <label for="mat-${m.id}">
+                        <span>${escapeHtml(m.nombre)}</span>
+                        <span class="material-estado-badge">${escapeHtml(m.estado)}</span>
+                    </label>
+                </div>
+            `).join('');
         })
         .catch(() => {
-            select.innerHTML = '<option value="">Error al cargar materiales</option>';
+            lista.innerHTML = '<p style="padding:10px; color:red; text-align:center;"><i class="fa-solid fa-triangle-exclamation"></i> Error al cargar materiales.</p>';
         });
 }
 
 /**
- * Maneja el envío del formulario de préstamo
+ * Actualiza el resumen de materiales seleccionados
  */
-document.addEventListener('DOMContentLoaded', () => {
-    const formPrestamo = document.getElementById('formNuevoPrestamo');
-    if (formPrestamo) {
-        formPrestamo.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const usuarioId = document.getElementById('usuarioPrestamo').value;
-            const materialSelect = document.getElementById('materialPrestamo');
-            const materialesSeleccionados = Array.from(materialSelect.selectedOptions).map(opt => opt.value);
-            const fechaLimite = document.getElementById('fechaLimite').value;
-            
-            if (!usuarioId) {
-                alert('Por favor seleccione un usuario');
-                return;
-            }
-            
-            if (materialesSeleccionados.length === 0) {
-                alert('Por favor seleccione al menos un material');
-                return;
-            }
-            
-            if (!fechaLimite) {
-                alert('Por favor seleccione una fecha límite');
-                return;
-            }
-            
-            // Enviar datos al servidor
-            const formData = new FormData();
-            formData.append('usuario_id', usuarioId);
-            materialesSeleccionados.forEach(m => formData.append('materiales[]', m));
-            formData.append('fecha_limite', fechaLimite);
-            
-            fetch('CRUD/registrarPrestamo.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Préstamo registrado exitosamente');
-                    toggleModal('modalFormPrestamo');
-                    cargarPrestamos();
-                } else {
-                    alert('Error al registrar el préstamo: ' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al registrar el préstamo');
-            });
-        });
-    }
-});
+window.actualizarResumenSeleccion = function () {
+    const seleccionados = document.querySelectorAll('#listaMateriales input[type="checkbox"]:checked');
+    const resumen = document.getElementById('resumenSeleccion');
+    const texto = document.getElementById('textoResumen');
+    const dropdownTexto = document.getElementById('dropdownMaterialesTexto');
 
-/**
- * Filtra los préstamos según los criterios de búsqueda y filtros
- */
+    if (!resumen || !texto) return;
+
+    if (seleccionados.length === 0) {
+        resumen.classList.add('hidden');
+        if (dropdownTexto) dropdownTexto.textContent = 'Seleccione materiales...';
+    } else {
+        resumen.classList.remove('hidden');
+        const nombres = Array.from(seleccionados).map(cb => {
+            // Obtener el nombre del label correspondiente
+            const label = document.querySelector(`label[for="${cb.id}"] span:first-child`);
+            return label ? label.textContent : cb.value;
+        });
+        texto.textContent = `${seleccionados.length} seleccionado(s): ${nombres.join(', ')}`;
+        if (dropdownTexto) dropdownTexto.textContent = `${seleccionados.length} seleccionado(s)`;
+    }
+};
+
+window.toggleMaterialesDropdown = function (event) {
+    if (event) event.stopPropagation();
+    const cuerpo = document.getElementById('dropdownMaterialesCuerpo');
+    const header = document.querySelector('.custom-dropdown-header');
+    
+    if (cuerpo && header) {
+        cuerpo.classList.toggle('hidden');
+        header.classList.toggle('active');
+    }
+};
+
 function filtrarPrestamos() {
     const busqueda = document.getElementById('buscarPrestamo')?.value.toLowerCase() || '';
     const estadoFiltro = document.getElementById('filtroEstadoPrestamo')?.value || '';
     const fechaInicio = document.getElementById('filtroFechaInicio')?.value;
     const fechaFin = document.getElementById('filtroFechaFin')?.value;
-    
+
     const filas = document.querySelectorAll('#tablaPrestamosBody tr');
-    
+
     if (filas.length === 1 && (filas[0].innerText.includes('No hay préstamos') || filas[0].innerText.includes('Error'))) return;
-    
+
     filas.forEach(fila => {
         let mostrar = true;
         const textoFila = fila.textContent.toLowerCase();
-        
-        if (busqueda && !textoFila.includes(busqueda)) {
-            mostrar = false;
-        }
-        
+
+        if (busqueda && !textoFila.includes(busqueda)) mostrar = false;
+
         if (mostrar && estadoFiltro) {
             const estadoCelda = fila.querySelector('.status-pill');
-            let estadoTexto = estadoCelda ? estadoCelda.textContent : '';
-            if (estadoTexto !== estadoFiltro) {
-                mostrar = false;
-            }
+            if (estadoCelda && estadoCelda.textContent !== estadoFiltro) mostrar = false;
         }
-        
+
         if (mostrar && (fechaInicio || fechaFin)) {
             const fechaLimite = fila.dataset.fechaLimite;
             if (fechaLimite) {
@@ -484,64 +494,44 @@ function filtrarPrestamos() {
                 if (fechaFin && fechaLimite > fechaFin) mostrar = false;
             }
         }
-        
+
         fila.style.display = mostrar ? '' : 'none';
     });
 }
 
-/**
- * Muestra/oculta los filtros avanzados
- */
-window.toggleFiltrosPrestamos = function() {
+window.toggleFiltrosPrestamos = function () {
     const filtros = document.getElementById('filtrosPrestamos');
-    if (filtros) {
-        filtros.classList.toggle('hidden');
-    }
+    if (filtros) filtros.classList.toggle('hidden');
 };
 
-/**
- * Limpia todos los filtros de préstamos
- */
-window.limpiarFiltrosPrestamos = function() {
-    const busqueda = document.getElementById('buscarPrestamo');
-    const estadoFiltro = document.getElementById('filtroEstadoPrestamo');
-    const fechaInicio = document.getElementById('filtroFechaInicio');
-    const fechaFin = document.getElementById('filtroFechaFin');
-    
-    if (busqueda) busqueda.value = '';
-    if (estadoFiltro) estadoFiltro.value = '';
-    if (fechaInicio) fechaInicio.value = '';
-    if (fechaFin) fechaFin.value = '';
-    
-    const filas = document.querySelectorAll('#tablaPrestamosBody tr');
-    filas.forEach(fila => {
+window.limpiarFiltrosPrestamos = function () {
+    const campos = ['buscarPrestamo', 'filtroEstadoPrestamo', 'filtroFechaInicio', 'filtroFechaFin'];
+    campos.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+
+    document.querySelectorAll('#tablaPrestamosBody tr').forEach(fila => {
         fila.style.display = '';
     });
 };
 
 // ========== FUNCIONES PARA EVENTOS ==========
 
-/**
- * Muestra u oculta el formulario de eventos
- */
-window.toggleFormEventos = function() {
+window.toggleFormEventos = function () {
     const form = document.getElementById('addEventForm');
     if (form) {
         form.classList.toggle('hidden');
         if (!form.classList.contains('hidden')) {
-            document.getElementById('eventTitle').value = '';
-            document.getElementById('eventLocation').value = '';
-            document.getElementById('eventDate').value = '';
-            document.getElementById('eventTime').value = '';
-            document.getElementById('eventDesc').value = '';
+            ['eventTitle', 'eventLocation', 'eventDate', 'eventTime', 'eventDesc'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
         }
     }
 };
 
-/**
- * Guarda un nuevo evento
- */
-window.saveEvent = function() {
+window.saveEvent = function () {
     const titulo = document.getElementById('eventTitle').value;
     const ubicacion = document.getElementById('eventLocation').value;
     const fecha = document.getElementById('eventDate').value;
@@ -555,11 +545,11 @@ window.saveEvent = function() {
 
     const evento = {
         id: Date.now(),
-        titulo: titulo,
-        ubicacion: ubicacion,
-        fecha: fecha,
-        hora: hora,
-        descripcion: descripcion,
+        titulo,
+        ubicacion,
+        fecha,
+        hora,
+        descripcion,
         fechaCreacion: new Date().toISOString()
     };
 
@@ -572,15 +562,12 @@ window.saveEvent = function() {
     alert('Evento guardado exitosamente');
 };
 
-/**
- * Carga y muestra los eventos guardados
- */
 function cargarEventos() {
     const container = document.getElementById('eventList');
     if (!container) return;
 
     const eventos = JSON.parse(localStorage.getItem('eventos') || '[]');
-    
+
     if (eventos.length === 0) {
         container.innerHTML = '<p style="text-align: center; color: #666;">No hay eventos registrados</p>';
         return;
@@ -601,11 +588,7 @@ function cargarEventos() {
     `).join('');
 }
 
-/**
- * Elimina un evento por ID
- * @param {number} id - ID del evento
- */
-window.eliminarEvento = function(id) {
+window.eliminarEvento = function (id) {
     if (confirm('¿Estás seguro de eliminar este evento?')) {
         let eventos = JSON.parse(localStorage.getItem('eventos') || '[]');
         eventos = eventos.filter(e => e.id !== id);
@@ -617,57 +600,46 @@ window.eliminarEvento = function(id) {
 
 // ========== FUNCIONES PARA USUARIOS ==========
 
-/**
- * Muestra el formulario de edición de usuario
- */
-window.mostrarFormularioEditar = function(id, nombre, email, rol) {
-    const inputId = document.getElementById('edit_id_usuario');
-    const inputNombre = document.getElementById('edit_nombre');
-    const inputEmail = document.getElementById('edit_email');
-    const inputRol = document.getElementById('edit_rol');
+window.mostrarFormularioEditar = function (id, nombre, email, rol) {
+    const campos = {
+        'edit_id_usuario': id,
+        'edit_nombre': nombre,
+        'edit_email': email,
+        'edit_rol': rol
+    };
 
-    if (inputId) inputId.value = id;
-    if (inputNombre) inputNombre.value = nombre;
-    if (inputEmail) inputEmail.value = email;
-    if (inputRol) inputRol.value = rol;
+    Object.entries(campos).forEach(([elementId, valor]) => {
+        const el = document.getElementById(elementId);
+        if (el) el.value = valor;
+    });
 
     document.getElementById('vistaTablaUsuarios').classList.add('hidden');
     document.getElementById('vistaFormularioUsuario').classList.remove('hidden');
-    
+
     const titulo = document.getElementById('tituloModalUsuarios');
     if (titulo) titulo.innerHTML = '<i class="fa-solid fa-user-pen"></i> Editar Usuario';
 };
 
-/**
- * Muestra el formulario de registro de usuario
- */
-window.mostrarFormularioRegistro = function() {
+window.mostrarFormularioRegistro = function () {
     document.getElementById('vistaTablaUsuarios').classList.add('hidden');
     document.getElementById('vistaRegistroUsuario').classList.remove('hidden');
     document.getElementById('tituloModalUsuarios').innerHTML = '<i class="fa-solid fa-user-plus"></i> Nuevo Registro';
 };
 
-/**
- * Muestra la vista de tabla de usuarios
- */
-window.mostrarTablaUsuarios = function() {
-    const vistaFormulario = document.getElementById('vistaFormularioUsuario');
-    const vistaRegistro = document.getElementById('vistaRegistroUsuario');
+window.mostrarTablaUsuarios = function () {
+    ['vistaFormularioUsuario', 'vistaRegistroUsuario'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+    });
+
     const vistaTabla = document.getElementById('vistaTablaUsuarios');
-    
-    if (vistaFormulario) vistaFormulario.classList.add('hidden');
-    if (vistaRegistro) vistaRegistro.classList.add('hidden');
     if (vistaTabla) vistaTabla.classList.remove('hidden');
-    
+
     const titulo = document.getElementById('tituloModalUsuarios');
     if (titulo) titulo.innerHTML = '<i class="fa-solid fa-users-gear"></i> Usuarios Registrados';
 };
 
-/**
- * Elimina un usuario
- * @param {number} id - ID del usuario
- */
-window.eliminarUsuario = function(id) {
+window.eliminarUsuario = function (id) {
     if (confirm('¿Estás seguro de eliminar este usuario?')) {
         window.location.href = `CRUD/eliminarUsuario.php?id=${id}`;
     }
@@ -675,224 +647,231 @@ window.eliminarUsuario = function(id) {
 
 // ========== FUNCIONES PARA DISCIPLINAS ==========
 
-/**
- * Muestra el formulario para agregar disciplina
- */
-window.mostrarFormularioDisciplina = function() {
+window.cargarDisciplinas = function() {
+    fetch('CRUD/obtenerDisciplinas.php')
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.getElementById('tablaDisciplinasBody');
+            if(data.length === 0){
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align: center;">No hay disciplinas registradas</td></tr>';
+                return;
+            }
+            tbody.innerHTML = data.map(d => `
+              <tr>
+                <td>${escapeHtml(d.disciplina)}</td>
+                <td>${escapeHtml(d.entrenador || 'Por Asignar')}</td>
+                <td class="actions">
+                  <button class="btn-icon delete" onclick="eliminarDisciplina(${d.id})"><i class="fa-regular fa-trash-can"></i></button>
+                </td>
+              </tr>
+            `).join('');
+        });
+};
+
+window.mostrarFormularioDisciplina = function () {
     const form = document.getElementById('formDisciplina');
     if (form) {
         form.classList.remove('hidden');
         document.getElementById('disciplinaNombre').value = '';
-        document.getElementById('disciplinaEntrenador').value = '';
+        
+        const select = document.getElementById('disciplinaEntrenador');
+        select.innerHTML = '<option value="">Cargando entrenadores...</option>';
+        fetch('CRUD/obtenerEntrenadores.php')
+            .then(res => res.json())
+            .then(entrenadores => {
+                select.innerHTML = '<option value="">Seleccione Entrenador...</option>' + 
+                    entrenadores.map(e => `<option value="${e.id}">${escapeHtml(e.nombre)}</option>`).join('');
+            });
     }
 };
 
-/**
- * Oculta el formulario de disciplina
- */
-window.ocultarFormularioDisciplina = function() {
+window.ocultarFormularioDisciplina = function () {
     const form = document.getElementById('formDisciplina');
-    if (form) {
-        form.classList.add('hidden');
-    }
+    if (form) form.classList.add('hidden');
 };
 
-/**
- * Guarda una nueva disciplina
- */
-window.guardarDisciplina = function() {
+window.guardarDisciplina = function () {
     const nombre = document.getElementById('disciplinaNombre').value;
-    const entrenador = document.getElementById('disciplinaEntrenador').value;
+    const entrenador_id = document.getElementById('disciplinaEntrenador').value;
 
     if (!nombre) {
         alert('Por favor ingrese el nombre de la disciplina');
         return;
     }
 
-    const tabla = document.getElementById('tablaDisciplinasBody');
-    const nuevaFila = document.createElement('tr');
-    
-    nuevaFila.innerHTML = `
-        <td>${escapeHtml(nombre)}</td>
-        <td>${escapeHtml(entrenador || 'Por Asignar')}</td>
-        <td><span class="status-pill status-active">Activo</span></td>
-        <td class="actions">
-            <button class="btn-icon edit" onclick="editarDisciplina(this)"><i class="fa-regular fa-pen-to-square"></i></button>
-            <button class="btn-icon delete" onclick="eliminarDisciplina(this)"><i class="fa-regular fa-trash-can"></i></button>
-        </td>
-    `;
-    
-    tabla.appendChild(nuevaFila);
-    ocultarFormularioDisciplina();
-    alert('Disciplina agregada exitosamente');
+    const formData = new FormData();
+    formData.append('nombre_disciplina', nombre);
+    if (entrenador_id) {
+        formData.append('entrenador_id', entrenador_id);
+    }
+
+    fetch('CRUD/insertarDisciplina.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(() => {
+        alert('Disciplina guardada exitosamente');
+        ocultarFormularioDisciplina();
+        cargarDisciplinas();
+    })
+    .catch(error => alert('Error al guardar disciplina'));
 };
 
-/**
- * Edita una disciplina existente
- * @param {HTMLElement} btn - Botón que disparó la acción
- */
-window.editarDisciplina = function(btn) {
-    const fila = btn.closest('tr');
-    const nombreCelda = fila.cells[0];
-    const entrenadorCelda = fila.cells[1];
-    
-    const nuevoNombre = prompt('Editar nombre de la disciplina:', nombreCelda.textContent);
-    if (nuevoNombre && nuevoNombre.trim()) {
-        nombreCelda.textContent = nuevoNombre.trim();
-    }
-    
-    const nuevoEntrenador = prompt('Editar entrenador:', entrenadorCelda.textContent);
-    if (nuevoEntrenador !== null) {
-        entrenadorCelda.textContent = nuevoEntrenador || 'Por Asignar';
-    }
-};
-
-/**
- * Elimina una disciplina
- * @param {HTMLElement} btn - Botón que disparó la acción
- */
-window.eliminarDisciplina = function(btn) {
+window.eliminarDisciplina = function (id) {
     if (confirm('¿Estás seguro de eliminar esta disciplina?')) {
-        const fila = btn.closest('tr');
-        fila.remove();
-        alert('Disciplina eliminada');
+        fetch('CRUD/eliminarDisciplina.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: id })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Disciplina eliminada');
+                cargarDisciplinas();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
     }
 };
 
 // ========== FUNCIONES PARA ENTRENADORES ==========
 
-/**
- * Muestra formulario para agregar entrenador
- */
-window.mostrarFormularioEntrenador = function() {
-    const nombre = prompt('Nombre del entrenador:');
-    if (nombre) {
-        const especialidad = prompt('Especialidad:');
-        const contacto = prompt('Email de contacto:');
-        
-        const tabla = document.getElementById('tablaEntrenadoresBody');
-        const nuevaFila = document.createElement('tr');
-        nuevaFila.innerHTML = `
-            <td>${escapeHtml(nombre)}</td>
-            <td>${escapeHtml(especialidad || 'Por definir')}</td>
-            <td>${escapeHtml(contacto || 'No especificado')}</td>
-            <td><span class="status-pill status-active">Activo</span></td>
-            <td class="actions">
-                <button class="btn-icon edit" onclick="editarEntrenador(this)"><i class="fa-regular fa-pen-to-square"></i></button>
-                <button class="btn-icon delete" onclick="eliminarEntrenador(this)"><i class="fa-regular fa-trash-can"></i></button>
-            </td>
-        `;
-        tabla.appendChild(nuevaFila);
-        alert('Entrenador agregado exitosamente');
+window.cargarEntrenadores = function() {
+    fetch('CRUD/obtenerEntrenadores.php')
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.getElementById('tablaEntrenadoresBody');
+            if(data.length === 0){
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No hay entrenadores</td></tr>';
+                return;
+            }
+            tbody.innerHTML = data.map(e => `
+              <tr>
+                <td>${escapeHtml(e.nombre)} ${escapeHtml(e.apellidos || '')}</td>
+                <td>Entrenador / Docente</td>
+                <td>${escapeHtml(e.email || 'No especificado')}</td>
+                <td><span class="status-pill status-active">Activo</span></td>
+                <td class="actions">
+                  <button class="btn-icon delete" onclick="eliminarEntrenador(${e.id})"><i class="fa-regular fa-trash-can"></i></button>
+                </td>
+              </tr>
+            `).join('');
+        });
+};
+
+window.mostrarFormularioEntrenador = function () {
+    const form = document.getElementById('formEntrenador');
+    if (form) {
+        form.classList.remove('hidden');
+        const select = document.getElementById('selectUsuarioEntrenador');
+        select.innerHTML = '<option value="">Cargando candidatos...</option>';
+        fetch('CRUD/obtenerCandidatosEntrenador.php')
+            .then(res => res.json())
+            .then(candidatos => {
+                select.innerHTML = '<option value="">Seleccione usuario...</option>' + 
+                    candidatos.map(c => `<option value="${c.id}">${escapeHtml(c.nombre)} ${escapeHtml(c.apellidos || '')}</option>`).join('');
+            });
     }
 };
 
-/**
- * Edita un entrenador
- * @param {HTMLElement} btn - Botón que disparó la acción
- */
-window.editarEntrenador = function(btn) {
-    const fila = btn.closest('tr');
-    if (!fila) return;
-    
-    const nombreCelda = fila.cells[0];
-    const especialidadCelda = fila.cells[1];
-    const contactoCelda = fila.cells[2];
-    
-    const nuevoNombre = prompt('Editar nombre:', nombreCelda.textContent);
-    if (nuevoNombre && nuevoNombre.trim()) {
-        nombreCelda.textContent = nuevoNombre.trim();
-    }
-    
-    const nuevaEspecialidad = prompt('Editar especialidad:', especialidadCelda.textContent);
-    if (nuevaEspecialidad !== null) {
-        especialidadCelda.textContent = nuevaEspecialidad || 'Por definir';
-    }
-    
-    const nuevoContacto = prompt('Editar contacto:', contactoCelda.textContent);
-    if (nuevoContacto !== null) {
-        contactoCelda.textContent = nuevoContacto || 'No especificado';
-    }
+window.ocultarFormularioEntrenador = function() {
+    const form = document.getElementById('formEntrenador');
+    if (form) form.classList.add('hidden');
 };
 
-/**
- * Elimina un entrenador
- * @param {HTMLElement} btn - Botón que disparó la acción
- */
-window.eliminarEntrenador = function(btn) {
-    if (confirm('¿Estás seguro de eliminar este entrenador?')) {
-        const fila = btn.closest('tr');
-        if (fila) {
-            fila.remove();
-            alert('Entrenador eliminado');
+window.guardarEntrenador = function () {
+    const id = document.getElementById('selectUsuarioEntrenador').value;
+    if (!id) {
+        alert('Seleccione un usuario para promover');
+        return;
+    }
+
+    fetch('CRUD/promoverAEntrenador.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.success) {
+            alert('Usuario promovido a Entrenador exitosamente');
+            ocultarFormularioEntrenador();
+            cargarEntrenadores();
+            
+            // Actualizar tabla principal de usuarios si existe la fila
+            const filaUsuario = document.getElementById('user-row-' + id);
+            if (filaUsuario) {
+                const celdaRol = filaUsuario.querySelector('.user-rol-cell');
+                if (celdaRol) celdaRol.textContent = 'Docente';
+            }
+        } else {
+            alert('Error: ' + data.message);
         }
+    });
+};
+
+window.eliminarEntrenador = function (id) {
+    if (confirm('¿Estás seguro de remover a este usuario del rol de Entrenador? (Será asignado como Alumno)')) {
+        fetch('CRUD/removerEntrenador.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: id })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('Entrenador removido. Ahora tiene rol de Alumno.');
+                cargarEntrenadores();
+                
+                // Actualizar tabla principal de usuarios si existe la fila
+                const filaUsuario = document.getElementById('user-row-' + id);
+                if (filaUsuario) {
+                    const celdaRol = filaUsuario.querySelector('.user-rol-cell');
+                    if (celdaRol) celdaRol.textContent = 'Alumno';
+                }
+            } else {
+                alert('Error: ' + data.message);
+            }
+        });
     }
 };
 
 // ========== FUNCIONES DE BÚSQUEDA ==========
 
-/**
- * Inicializa los buscadores en tiempo real
- */
 function inicializarBuscadores() {
-    // Buscador de usuarios
-    const inputBusqueda = document.getElementById('buscarUsuario');
-    if (inputBusqueda) {
-        inputBusqueda.addEventListener('keyup', () => {
-            const valor = inputBusqueda.value.toLowerCase();
-            const filasUsuarios = document.querySelectorAll('#tablaUsuariosBody tr');
-            filtrarFilas(filasUsuarios, valor);
-        });
-    }
-    
-    // Buscador de disciplinas
-    const inputBusquedaDisciplina = document.getElementById('buscarDisciplina');
-    if (inputBusquedaDisciplina) {
-        inputBusquedaDisciplina.addEventListener('keyup', () => {
-            const valor = inputBusquedaDisciplina.value.toLowerCase();
-            const filasDisciplinas = document.querySelectorAll('#tablaDisciplinasBody tr');
-            filtrarFilas(filasDisciplinas, valor);
-        });
-    }
-    
-    // Buscador de préstamos
-    const inputBusquedaPrestamo = document.getElementById('buscarPrestamo');
-    if (inputBusquedaPrestamo) {
-        inputBusquedaPrestamo.addEventListener('keyup', () => {
-            filtrarPrestamos();
-        });
-    }
-    
-    // Buscador de entrenadores
-    const inputBusquedaEntrenador = document.getElementById('buscarEntrenador');
-    if (inputBusquedaEntrenador) {
-        inputBusquedaEntrenador.addEventListener('keyup', () => {
-            const valor = inputBusquedaEntrenador.value.toLowerCase();
-            const filasEntrenadores = document.querySelectorAll('#tablaEntrenadoresBody tr');
-            filtrarFilas(filasEntrenadores, valor);
-        });
+    const buscadores = [
+        { inputId: 'buscarUsuario', tablaId: '#tablaUsuariosBody tr' },
+        { inputId: 'buscarDisciplina', tablaId: '#tablaDisciplinasBody tr' },
+        { inputId: 'buscarEntrenador', tablaId: '#tablaEntrenadoresBody tr' }
+    ];
+
+    buscadores.forEach(({ inputId, tablaId }) => {
+        const input = document.getElementById(inputId);
+        if (input) {
+            input.addEventListener('keyup', () => {
+                const valor = input.value.toLowerCase();
+                filtrarFilas(document.querySelectorAll(tablaId), valor);
+            });
+        }
+    });
+
+    // Buscador de préstamos (usa filtrarPrestamos para considerar todos los filtros)
+    const inputPrestamo = document.getElementById('buscarPrestamo');
+    if (inputPrestamo) {
+        inputPrestamo.addEventListener('keyup', filtrarPrestamos);
     }
 }
 
-/**
- * Filtra filas de una tabla según texto de búsqueda
- * @param {NodeList} filas - Lista de filas a filtrar
- * @param {string} valor - Texto de búsqueda
- */
 function filtrarFilas(filas, valor) {
     filas.forEach(fila => {
-        const contenido = fila.textContent.toLowerCase();
-        fila.style.display = contenido.includes(valor) ? '' : 'none';
+        fila.style.display = fila.textContent.toLowerCase().includes(valor) ? '' : 'none';
     });
 }
 
 // ========== FUNCIONES UTILITARIAS ==========
 
-/**
- * Escapa caracteres HTML para prevenir XSS
- * @param {string} str - Texto a escapar
- * @returns {string} Texto escapado
- */
 function escapeHtml(str) {
     if (!str) return '';
     return str
@@ -903,13 +882,15 @@ function escapeHtml(str) {
         .replace(/'/g, '&#39;');
 }
 
-/**
- * Formatea una fecha para mostrar
- * @param {string} fechaStr - Fecha en formato YYYY-MM-DD
- * @returns {string} Fecha formateada
- */
 function formatFecha(fechaStr) {
     if (!fechaStr) return 'Fecha no especificada';
-    const [year, month, day] = fechaStr.split('-');
-    return `${day}/${month}/${year}`;
+
+    let fechaParte = fechaStr.includes(' ') ? fechaStr.split(' ')[0] : fechaStr;
+    const partes = fechaParte.split('-');
+
+    if (partes.length === 3) {
+        return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    }
+
+    return fechaStr;
 }

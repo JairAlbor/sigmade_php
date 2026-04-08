@@ -1,43 +1,163 @@
+/* ========== VARIABLES GLOBALES ========== */
 :root {
     --marron-sigmade: #6b1d2e;
+    --marron-sigmade-hover: #5a1827;
     --verde-sigmade: #00a843;
+    --verde-sigmade-hover: #00913a;
     --azul-total: #2563eb;
     --verde-disponible: #16a34a;
     --naranja-reservado: #f59e0b;
+    --rojo-ocupado: #dc2626;
     --gris-fondo: #f8f9fa;
     --gris-suave: #f9fafb;
     --borde-suave: #e0e4e8;
+    --sombra-suave: 0 2px 10px rgba(0, 0, 0, 0.05);
+    --sombra-media: 0 4px 20px rgba(0, 0, 0, 0.08);
+    --sombra-fuerte: 0 8px 30px rgba(0, 0, 0, 0.12);
 }
 
-/* ========== FORMULARIO (Estilo del primer código) ========== */
+/* ========== HEADER ========== */
+.header-catalogo {
+    margin-bottom: 2rem;
+}
 
-/* Contenedor del Formulario */
+.header-catalogo h1 {
+    font-size: 2rem;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    margin: 0;
+}
+
+/* ========== MODALES (FORMULARIOS) ========== */
 .form-card {
     background: white;
-    border: 1px solid #d1e3f8; /* El azul clarito de tu imagen */
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    border-radius: 16px;
+    padding: 0;
+    box-shadow: var(--sombra-fuerte);
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;  /* Mayor que el overlay */
+    width: 90%;
+    max-width: 600px;
+    max-height: 85vh;
+    overflow-y: auto;
+    animation: fadeInUp 0.3s ease-out;
+}
+
+/* Forzar que el modal sea interactivo */
+.form-card,
+.form-card *,
+.form-card form,
+.form-card input,
+.form-card select,
+.form-card button,
+.form-card textarea,
+.form-card .file-input-wrapper,
+.file-input-wrapper input {
+    pointer-events: auto !important;
+    position: relative;
+    z-index: 1001;
+}
+
+.modal-header-form {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--borde-suave);
+    background: var(--gris-suave);
+    border-radius: 16px 16px 0 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.modal-header-form h3 {
+    margin: 0;
+    color: var(--marron-sigmade);
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.modal-header-form h3 i {
+    margin-right: 8px;
+}
+
+.btn-cerrar-modal {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    cursor: pointer;
+    color: #666;
+    transition: color 0.2s;
+    padding: 5px;
+}
+
+.btn-cerrar-modal:hover {
+    color: var(--marron-sigmade);
+}
+
+.form-card form {
+    padding: 1.5rem;
 }
 
 .form-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr; /* Proporciones de los inputs */
+    grid-template-columns: 1fr;
     gap: 15px;
     margin-bottom: 20px;
 }
 
-/* Inputs y Selects del formulario */
+/* Inputs y Selects */
 .form-card input, 
 .form-card select {
-    padding: 10px;
+    padding: 12px 15px;
     border: 1px solid var(--borde-suave);
-    border-radius: 8px;
+    border-radius: 10px;
     outline: none;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    background: white;
+    width: 100%;
 }
 
-/* Botones del formulario */
+.form-card input:focus,
+.form-card select:focus {
+    border-color: var(--marron-sigmade);
+    box-shadow: 0 0 0 3px rgba(107, 29, 46, 0.1);
+}
+
+.file-input-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.file-input-wrapper label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #374151;
+}
+
+.file-input-wrapper label i {
+    margin-right: 6px;
+    color: var(--marron-sigmade);
+}
+
+.file-input-wrapper input {
+    padding: 8px;
+}
+
+/* Botones */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 10px;
+}
+
 .btn-principal {
     background-color: var(--marron-sigmade);
     color: white;
@@ -45,7 +165,20 @@
     padding: 10px 20px;
     border-radius: 8px;
     cursor: pointer;
-    font-weight: bold;
+    font-weight: 600;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-principal:hover {
+    background-color: var(--marron-sigmade-hover);
+    transform: translateY(-1px);
+}
+
+.btn-principal:active {
+    transform: translateY(0);
 }
 
 .btn-exito {
@@ -54,8 +187,14 @@
     border: none;
     padding: 10px 25px;
     border-radius: 8px;
-    font-weight: bold;
+    font-weight: 600;
     cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-exito:hover {
+    background-color: var(--verde-sigmade-hover);
+    transform: translateY(-1px);
 }
 
 .btn-secundario {
@@ -64,22 +203,27 @@
     padding: 10px 20px;
     border-radius: 8px;
     cursor: pointer;
+    transition: all 0.2s;
 }
 
-/* ========== CONTROLES SUPERIORES (BÚSQUEDA + TARJETAS) ========== */
+.btn-secundario:hover {
+    background: var(--gris-suave);
+    border-color: #ccc;
+}
 
+/* ========== CONTROLES SUPERIORES ========== */
 .controls-container {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 20px;
     margin-bottom: 25px;
-    padding: 10px;
+    flex-wrap: wrap;
 }
 
 .search-bar-container {
     flex: 1;
-    max-width: 450px;
+    min-width: 250px;
 }
 
 .search-input-wrapper {
@@ -92,101 +236,212 @@
     position: absolute;
     left: 15px;
     color: #9ca3af;
+    font-size: 1rem;
 }
 
 .search-input-wrapper input {
     width: 100%;
     padding: 12px 12px 12px 40px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--borde-suave);
     border-radius: 10px;
-    background: var(--gris-suave);
+    background: white;
     outline: none;
+    transition: all 0.2s;
+    font-size: 0.95rem;
+}
+
+.search-input-wrapper input:focus {
+    border-color: var(--marron-sigmade);
+    box-shadow: 0 0 0 3px rgba(107, 29, 46, 0.1);
+}
+
+/* ========== FILTROS RÁPIDOS ========== */
+.filtros-rapidos {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filtro-select {
+    padding: 10px 15px;
+    border: 1px solid var(--borde-suave);
+    border-radius: 10px;
+    background: white;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 180px;
+}
+
+.filtro-select:hover {
+    border-color: var(--marron-sigmade);
+}
+
+.filtro-select:focus {
+    outline: none;
+    border-color: var(--marron-sigmade);
+    box-shadow: 0 0 0 3px rgba(107, 29, 46, 0.1);
+}
+
+.btn-limpiar-filtros {
+    background: #f3f4f6;
+    border: 1px solid var(--borde-suave);
+    padding: 10px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-limpiar-filtros:hover {
+    background: #e5e7eb;
+    transform: translateY(-1px);
+}
+
+/* ========== BADGES DE FILTROS ACTIVOS ========== */
+.filtros-activos-badge {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 10px 0 20px 0;
+}
+
+.badge-filtro-activo {
+    background: #f3f4f6;
+    border: 1px solid var(--marron-sigmade);
+    color: var(--marron-sigmade);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.badge-filtro-activo i {
+    cursor: pointer;
+    font-size: 0.7rem;
+}
+
+.badge-filtro-activo i:hover {
+    color: #dc2626;
 }
 
 /* ========== TARJETAS DE ESTADÍSTICAS ========== */
-
 .stats-cards {
     display: flex;
-    gap: 15px;
-    margin-bottom: 0;
+    gap: 20px;
+    margin: 20px 0 40px 0;
+    flex-wrap: wrap;
 }
 
 .stat-card {
     background: #ffffff;
-    padding: 15px 25px;
-    border-radius: 12px;
+    padding: 18px 28px;
+    border-radius: 16px;
     text-align: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    min-width: 140px;
+    box-shadow: var(--sombra-suave);
+    min-width: 160px;
     display: flex;
     flex-direction: column;
-    border: 1px solid #eee;
+    transition: all 0.3s ease;
+    border: 1px solid #f0f0f0;
+    position: relative;
+    overflow: hidden;
+    flex: 1;
+    max-width: 200px;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--sombra-media);
+}
+
+/* Línea decorativa superior */
+.stat-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+}
+
+.stat-card.total::after {
+    background: linear-gradient(90deg, var(--azul-total), #60a5fa);
+}
+
+.stat-card.available::after {
+    background: linear-gradient(90deg, var(--verde-disponible), #4ade80);
+}
+
+.stat-card.reserved::after {
+    background: linear-gradient(90deg, var(--naranja-reservado), #fbbf24);
 }
 
 .stat-label {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: #6b7280;
     text-transform: uppercase;
-    font-weight: bold;
-    margin-bottom: 5px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
 }
 
 .stat-number {
     display: block;
-    font-size: 1.7rem;
-    font-weight: bold;
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.2;
 }
 
 /* Colores específicos por tipo de tarjeta */
-.stat-card.total {
-    border-left: 5px solid var(--azul-total);
-}
 .stat-card.total .stat-number {
     color: var(--azul-total);
 }
 
-.stat-card.available {
-    border-left: 5px solid var(--verde-disponible);
-}
 .stat-card.available .stat-number {
     color: var(--verde-disponible);
 }
 
-.stat-card.reserved {
-    border-left: 5px solid var(--naranja-reservado);
-}
 .stat-card.reserved .stat-number {
-    color: var(--naranja-reservado) !important;
+    color: var(--naranja-reservado);
 }
 
-/* ========== TABLA ========== */
-
+/* ========== CONTENEDOR DE TABLA ========== */
 .tabla-container {
     background-color: transparent;
-    margin-top: 20px;
+    margin-top: 10px;
     width: 100%;
 }
 
 .table-responsive {
     background-color: #ffffff;
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border-radius: 16px;
+    overflow-x: auto;
+    box-shadow: var(--sombra-media);
+    margin-top: 15px;
 }
 
+/* ========== TABLA ========== */
 .material-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 0.95rem;
+    min-width: 600px;
 }
 
 .material-table th {
     text-align: left;
     padding: 15px 20px;
-    background-color: #f9fafb;
-    color: #4b5563;
-    font-weight: 600;
-    border-bottom: 1px solid #eee;
+    background-color: var(--gris-suave);
+    color: #1f2937;
+    font-weight: 700;
+    border-bottom: 2px solid var(--borde-suave);
 }
 
 .material-table td {
@@ -195,83 +450,251 @@
     color: #374151;
 }
 
+.material-table tbody tr:hover {
+    background-color: var(--gris-suave);
+}
+
+.material-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
 /* ========== BADGES / ETIQUETAS ========== */
-
-.badge {
-    padding: 5px 12px;
-    border-radius: 15px;
-    font-size: 0.8rem;
-    font-weight: 500;
+.badge-estado {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-block;
 }
 
-.badge-libro {
-    background-color: #e0e7ff;
-    color: #4338ca;
+.badge-estado.nuevo {
+    background-color: #dbeafe;
+    color: #1e40af;
 }
 
-.badge-deporte {
+.badge-estado.bueno {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+.badge-estado.regular {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.badge-estado.muy-desgastado {
+    background-color: #fed7aa;
+    color: #9a3412;
+}
+
+.badge-estado.roto {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.badge-disponible {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.badge-disponible.disponible-libre {
     background-color: #dcfce7;
     color: #15803d;
 }
 
-.text-green {
-    color: #16a34a;
-    font-weight: bold;
+.badge-disponible.disponible-no-libre {
+    background-color: #fee2e2;
+    color: #dc2626;
 }
 
-/* ========== ACCIONES (EDITAR/ELIMINAR) ========== */
+/* ========== ACCIONES ========== */
+.actions {
+    display: flex;
+    gap: 8px;
+    white-space: nowrap;
+}
 
 .btn-icon {
     border: none;
     background: none;
     cursor: pointer;
-    margin: 0 5px;
+    padding: 6px 8px;
     font-size: 1.1rem;
-    transition: 0.2s;
+    transition: all 0.2s;
+    border-radius: 6px;
 }
 
 .btn-icon.edit {
-    color: #3b82f6;
+    color: var(--azul-total);
+}
+
+.btn-icon.edit:hover {
+    background-color: #dbeafe;
+    transform: scale(1.05);
 }
 
 .btn-icon.delete {
-    color: #ef4444;
+    color: var(--rojo-ocupado);
 }
 
-.btn-icon:hover {
-    transform: scale(1.1);
+.btn-icon.delete:hover {
+    background-color: #5f5959;
+    transform: scale(1.05);
 }
 
-/* ========== INPUTS Y SELECTS GENERALES ========== */
-
-input, select {
-    padding: 10px;
-    border: 1px solid var(--borde-suave);
-    border-radius: 8px;
-    outline: none;
+/* ========== OVERLAY PARA MODALES ========== */
+.modal-overlay-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px);
+    z-index: 999;  /* Menor que el modal */
 }
-
 /* ========== UTILIDADES ========== */
-
 .hidden {
-    display: none;
+    display: none !important;
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* ========== ANIMACIONES ========== */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -48%);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Aplicar animación a las tarjetas */
+.stat-card {
+    animation: slideIn 0.3s ease-out;
 }
 
 /* ========== RESPONSIVE ========== */
-
 @media (max-width: 768px) {
     .controls-container {
         flex-direction: column;
         align-items: stretch;
     }
     
-    .stats-cards {
-        flex-wrap: wrap;
+    .filtros-rapidos {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .filtro-select {
+        width: 100%;
+    }
+    
+    .btn-limpiar-filtros {
+        width: 100%;
         justify-content: center;
     }
     
-    .form-grid {
-        grid-template-columns: 1fr;
-        gap: 10px;
+    .stats-cards {
+        gap: 15px;
+        margin: 20px 0 30px 0;
+    }
+    
+    .stat-card {
+        padding: 12px 20px;
+        min-width: auto;
+        max-width: none;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+    }
+    
+    .table-responsive {
+        margin-top: 15px;
+    }
+    
+    .form-card {
+        width: 95%;
+        max-height: 90vh;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .form-actions button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-cards {
+        flex-direction: column;
+        gap: 12px;
+        margin: 15px 0 25px 0;
+    }
+    
+    .stat-card {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        text-align: left;
+    }
+    
+    .stat-card::after {
+        height: 100%;
+        width: 3px;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: auto;
+    }
+    
+    .modal-header-form h3 {
+        font-size: 1rem;
+    }
+    
+    .material-table th,
+    .material-table td {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .stats-cards {
+        gap: 15px;
+    }
+    
+    .stat-card {
+        padding: 15px 20px;
+        min-width: 140px;
+    }
+    
+    .stat-number {
+        font-size: 1.6rem;
     }
 }

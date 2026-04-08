@@ -76,7 +76,7 @@ window.openEventModal = function() {
  * Carga los préstamos desde el servidor usando la sentencia SQL
  */
 function cargarPrestamos() {
-    fetch('CRUD/obtenerPrestamos.php')
+    fetch('CRUD/obtenerPrestamo.php')
         .then(response => response.json())
         .then(data => {
             actualizarTablaPrestamos(data);
