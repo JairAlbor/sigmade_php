@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="css/logoSigmade.png">
     <title>Perfil</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/nav-bar.css">
@@ -70,6 +71,9 @@ $prestamos_activos = mysqli_fetch_assoc($res_activos)['activos'];
           </div>
           <span id="userName" class="user-name">Hola, <?php echo $_SESSION['usuario_nombre']; ?></span>
         </div>
+        <a href="extras/logout.php" class="btn-logout" title="Cerrar Sesión">
+          <i data-lucide="log-out" class="icon-logout"></i>
+        </a>
       </div>
     </nav>
 

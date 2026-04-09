@@ -4,6 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/png" href="css/logoSigmade.png">
   <title>Dashboard de Administración</title>
   <link rel="stylesheet" href="css/nav-bar.css" />
   <link rel="stylesheet" href="css/style.css" />
@@ -53,6 +54,9 @@
         </div>
         <span id="userName" class="user-name"><?php echo isset($_SESSION['usuario_nombre']) ? $_SESSION['usuario_nombre'] : 'Usuario'; ?></span>
       </div>
+      <a href="extras/logout.php" class="btn-logout" title="Cerrar Sesión">
+        <i data-lucide="log-out" class="icon-logout"></i>
+      </a>
     </div>
   </nav>
 

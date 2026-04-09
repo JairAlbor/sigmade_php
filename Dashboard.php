@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="css/logoSigmade.png">
     <title>Dashboard</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/nav-bar.css">
@@ -18,7 +19,7 @@
     }
     ?>
  <nav class="navbar">
-  <div class="logo">SIGMADE</div>
+  <div class="logo"><img src="css/logoSigmade.png" alt="SIGMADE" width="100px" height="90px""></div>
 
   <ul class="nav-menu">
     <li class="nav-item active">Inicio</li>
@@ -40,6 +41,9 @@
         <?php echo isset($_SESSION['usuario_nombre']) ? $_SESSION['usuario_nombre'] : 'Usuario'; ?>
       </span>
     </div>
+    <a href="extras/logout.php" class="btn-logout" title="Cerrar Sesión">
+      <i data-lucide="log-out" class="icon-logout"></i>
+    </a>
   </div>
 </nav>
 
