@@ -6,7 +6,7 @@
     <link rel="icon" type="image/png" href="css/logoSigmade.png">
     <title>Perfil</title>
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/nav-bar.css">
+    <link rel="stylesheet" href="css/navBar.css">
     <link rel="stylesheet" href="css/profile.css">
     <script src="https://unpkg.com/lucide@latest"></script>
   </head>
@@ -45,7 +45,7 @@ $prestamos_activos = mysqli_fetch_assoc($res_activos)['activos'];
 
 
     <nav class="navbar">
-      <div class="logo">SIGMADE</div>
+      <div class="logo"><img src="css/logoSigmade.png" alt="Logo SIGMADE" width="100px" height="90px"></div>
 
       <ul class="nav-menu">
         <?php 

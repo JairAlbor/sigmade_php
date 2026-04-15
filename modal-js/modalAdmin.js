@@ -352,40 +352,44 @@ function actualizarEstadisticasDashboard() {
 }
 
 window.gestionarPrestamo = function (id) {
-    const accion = prompt('¿Qué acción desea realizar?\n1 - Ver detalles\n2 - Renovar préstamo\n3 - Aplicar sanción\n\nIngrese el número de la acción:', '1');
+    document.getElementById('inputDetallePrestamoId').value = id;
 
-    switch (accion) {
-        case '1':
-            verDetallePrestamo(id);
-            break;
-        case '2':
-            const nuevosDias = prompt('¿Cuántos días adicionales desea agregar?', '7');
-            if (nuevosDias && !isNaN(nuevosDias) && nuevosDias > 0) {
-                window.location.href = `CRUD/renovarPrestamo.php?id=${id}&dias=${nuevosDias}`;
-            }
-            break;
-        case '3':
-            const motivo = prompt('Motivo de la sanción:');
-            if (motivo) {
-                window.location.href = `CRUD/sancionarUsuario.php?prestamo_id=${id}&motivo=${encodeURIComponent(motivo)}`;
-            }
-            break;
-        default:
-            if (accion !== null) alert('Acción no válida');
-    }
-};
-
-function verDetallePrestamo(id) {
+    // Fetch details first
     fetch(`CRUD/obtenerDetallePrestamo.php?id=${id}`)
         .then(response => response.json())
         .then(data => {
-            alert(`Detalle del préstamo #${id}\n\nUsuario: ${data.usuario_nombre} ${data.usuario_apellidos}\nMateriales: ${data.materiales}\nFecha solicitud: ${data.fecha_solicitud}\nFecha límite: ${data.fecha_limite}\nEstado: ${data.estado_general}`);
+            const body = document.getElementById('detallePrestamoBody');
+            body.innerHTML = `
+                <p><strong>ID Préstamo:</strong> #${id}</p>
+                <p><strong>Usuario:</strong> ${data.usuario_nombre} ${data.usuario_apellidos}</p>
+                <p><strong>Materiales:</strong> ${data.materiales}</p>
+                <p><strong>Fecha Solicitud:</strong> ${data.fecha_solicitud}</p>
+                <p><strong>Fecha Límite:</strong> ${data.fecha_limite}</p>
+                <p><strong>Estado:</strong> <span class="status-pill status-active">${data.estado_general}</span></p>
+            `;
+            toggleModal('modalDetallePrestamo');
         })
         .catch(error => {
             console.error('Error:', error);
             alert('Error al obtener detalles del préstamo');
         });
-}
+};
+
+window.accionRenovarPrestamo = function () {
+    const id = document.getElementById('inputDetallePrestamoId').value;
+    const nuevosDias = prompt('¿Cuántos días adicionales desea agregar?', '7');
+    if (nuevosDias && !isNaN(nuevosDias) && nuevosDias > 0) {
+        window.location.href = `CRUD/renovarPrestamo.php?id=${id}&dias=${nuevosDias}`;
+    }
+};
+
+window.accionSancionarUsuario = function () {
+    const id = document.getElementById('inputDetallePrestamoId').value;
+    const motivo = prompt('Motivo de la sanción:');
+    if (motivo) {
+        window.location.href = `CRUD/sancionarUsuario.php?prestamo_id=${id}&motivo=${encodeURIComponent(motivo)}`;
+    }
+};
 
 window.eliminarPrestamo = function (id) {
     if (confirm('¿Está seguro de eliminar este préstamo? Esta acción no se puede deshacer.')) {
@@ -587,58 +591,79 @@ window.saveEvent = function () {
         return;
     }
 
-    const evento = {
-        id: Date.now(),
-        titulo,
-        ubicacion,
-        fecha,
-        hora,
-        descripcion,
-        fechaCreacion: new Date().toISOString()
-    };
+    const formData = new URLSearchParams();
+    formData.append('titulo', titulo);
+    formData.append('ubicacion', ubicacion);
+    formData.append('fecha', fecha);
+    formData.append('hora', hora);
+    formData.append('descripcion', descripcion);
 
-    let eventos = JSON.parse(localStorage.getItem('eventos') || '[]');
-    eventos.push(evento);
-    localStorage.setItem('eventos', JSON.stringify(eventos));
-
-    toggleFormEventos();
-    cargarEventos();
-    alert('Evento guardado exitosamente');
+    fetch('CRUD/registrarEvento.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData.toString()
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                toggleFormEventos();
+                cargarEventos();
+                alert('Evento guardado exitosamente');
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(err => alert('Error salvando evento'));
 };
 
 function cargarEventos() {
     const container = document.getElementById('eventList');
     if (!container) return;
 
-    const eventos = JSON.parse(localStorage.getItem('eventos') || '[]');
+    fetch('CRUD/obtenerEventos.php')
+        .then(res => res.json())
+        .then(eventos => {
+            if (eventos.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666;">No hay eventos registrados</p>';
+                return;
+            }
 
-    if (eventos.length === 0) {
-        container.innerHTML = '<p style="text-align: center; color: #666;">No hay eventos registrados</p>';
-        return;
-    }
-
-    eventos.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
-
-    container.innerHTML = eventos.map(evento => `
-        <div class="event-card">
-            <h3><i class="fa-solid fa-calendar-alt"></i> ${escapeHtml(evento.titulo)}</h3>
-            <p><i class="fa-solid fa-location-dot"></i> ${escapeHtml(evento.ubicacion || 'No especificada')}</p>
-            <p><i class="fa-solid fa-calendar-day"></i> ${formatFecha(evento.fecha)} ${evento.hora ? `a las ${evento.hora}` : ''}</p>
-            <p><i class="fa-solid fa-align-left"></i> ${escapeHtml(evento.descripcion || 'Sin descripción')}</p>
-            <button class="btn-icon delete" onclick="eliminarEvento(${evento.id})" style="margin-top: 10px;">
-                <i class="fa-solid fa-trash-can"></i> Eliminar
-            </button>
-        </div>
-    `).join('');
+            container.innerHTML = eventos.map(evento => `
+                <div class="event-card">
+                    <h3><i class="fa-solid fa-calendar-alt"></i> ${escapeHtml(evento.titulo)}</h3>
+                    <p><i class="fa-solid fa-location-dot"></i> ${escapeHtml(evento.ubicacion || 'No especificada')}</p>
+                    <p><i class="fa-solid fa-calendar-day"></i> ${formatFecha(evento.fecha)} ${evento.hora ? `a las ${evento.hora}` : ''}</p>
+                    <p><i class="fa-solid fa-align-left"></i> ${escapeHtml(evento.descripcion || 'Sin descripción')}</p>
+                    <button class="btn-icon delete" onclick="eliminarEvento(${evento.id})" style="margin-top: 10px;">
+                        <i class="fa-solid fa-trash-can"></i> Eliminar
+                    </button>
+                </div>
+            `).join('');
+        })
+        .catch(() => {
+            container.innerHTML = '<p style="color:red; text-align:center;">Error cargando eventos.</p>';
+        });
 }
 
 window.eliminarEvento = function (id) {
     if (confirm('¿Estás seguro de eliminar este evento?')) {
-        let eventos = JSON.parse(localStorage.getItem('eventos') || '[]');
-        eventos = eventos.filter(e => e.id !== id);
-        localStorage.setItem('eventos', JSON.stringify(eventos));
-        cargarEventos();
-        alert('Evento eliminado');
+        const formData = new URLSearchParams();
+        formData.append('id', id);
+
+        fetch('CRUD/eliminarEvento.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData.toString()
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    cargarEventos();
+                    alert('Evento eliminado');
+                } else {
+                    alert(data.message);
+                }
+            });
     }
 };
 

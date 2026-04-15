@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/png" href="css/logoSigmade.png">
   <title>Dashboard de Administración</title>
-  <link rel="stylesheet" href="css/nav-bar.css" />
+  <link rel="stylesheet" href="css/navBar.css" />
   <link rel="stylesheet" href="css/style.css" />
   <link rel="stylesheet" href="css/cssAdmin.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -37,7 +37,7 @@
 
   <!-- NAVBAR -->
   <nav class="navbar">
-    <div class="logo">SIGMADE</div>
+    <div class="logo"><img src="css/logoSigmade.png" alt="Logo SIGMADE" width="100px" height="90px"></div>
     <ul class="nav-menu">
       <li class="nav-item active">Inicio</li>
       <li class="nav-item" onclick="window.location.href = 'catalogo.php'">Catalogo</li>
@@ -52,7 +52,7 @@
         <div class="user-avatar">
           <i data-lucide="user" class="icon-user"></i>
         </div>
-        <span id="userName" class="user-name"><?php echo isset($_SESSION['usuario_nombre']) ? $_SESSION['usuario_nombre'] : 'Usuario'; ?></span>
+        <span id="userName" class="user-name">Hola, <?php echo isset($_SESSION['usuario_nombre']) ? $_SESSION['usuario_nombre'] : 'Usuario'; ?></span>
       </div>
       <a href="extras/logout.php" class="btn-logout" title="Cerrar Sesión">
         <i data-lucide="log-out" class="icon-logout"></i>
@@ -705,6 +705,29 @@
             <button class="btn-secondary" onclick="toggleModal('modalFinalizarPrestamo')">Cancelar</button>
             <button class="btn-guinda" onclick="finalizarPrestamo()">Confirmar y Finalizar</button>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DETALLES DEL PRÉSTAMO -->
+  <div id="modalDetallePrestamo" class="modal-overlay hidden">
+    <div class="modal-content modal-medium">
+      <header class="modal-header">
+        <h2><i class="fa-solid fa-list"></i> Detalles del Préstamo</h2>
+        <button class="close-modal-btn" onclick="toggleModal('modalDetallePrestamo')">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </header>
+      <div class="modal-body">
+        <div id="detallePrestamoBody" style="margin-bottom: 20px; font-size: 16px; line-height: 1.5;">
+          <!-- Content loaded via JS -->
+        </div>
+        <input type="hidden" id="inputDetallePrestamoId">
+        <div class="form-actions-edit" style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+          <button class="btn-principal" onclick="accionRenovarPrestamo()">Renovar Préstamo</button>
+          <button class="btn-guinda" onclick="accionSancionarUsuario()">Aplicar Sanción</button>
+          <button class="btn-secondary" onclick="toggleModal('modalDetallePrestamo')">Cerrar</button>
         </div>
       </div>
     </div>

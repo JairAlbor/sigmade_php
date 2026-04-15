@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="css/logoSigmade.png">
     <title>SIGMADE - Acceso y Registro</title>
-    <link rel="stylesheet" href="css/nav-bar.css">
+    <link rel="stylesheet" href="css/navBar.css">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/login.css">
 </head>
 <body>
 
     <nav class="navbar">
-        <div class="logo">SIGMADE</div>
+        <div class="logo"><img src="css/logoSigmade.png" alt="Logo SIGMADE" width="100px" height="90px"></div>
         <div class="imagenLogo">
             <img src="css/uuutm.png" alt="Logo UTM" width="180px" height="57px">
         </div>
@@ -104,6 +104,5 @@
         </div>
     </main>
 
-    <script src="app.js"></script>
-</body>
+]</body>
 </html>

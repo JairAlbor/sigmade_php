@@ -35,7 +35,7 @@ foreach ($materiales as $material_id) {
 
 // Insertar préstamo
 $sql = "INSERT INTO prestamo (usuario_id, fecha_solicitud, fecha_limite, estado_general) 
-        VALUES ($usuario_id, CURDATE(), '$fecha_limite', 'Activo')";
+        VALUES ($usuario_id, CURDATE(), '$fecha_limite', 'Pendiente')";
 
 if (mysqli_query($conn, $sql)) {
     $prestamo_id = mysqli_insert_id($conn);

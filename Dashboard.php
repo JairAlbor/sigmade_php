@@ -6,8 +6,10 @@
     <link rel="icon" type="image/png" href="css/logoSigmade.png">
     <title>Dashboard</title>
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/nav-bar.css">
+    <link rel="stylesheet" href="css/navBar.css">
     <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/cssAdmin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <script src="https://unpkg.com/lucide@latest"></script>
   </head>
   <body>
@@ -38,7 +40,7 @@
         <i data-lucide="user" class="icon-user"></i>
       </div>
       <span id="userName" class="user-name">
-        <?php echo isset($_SESSION['usuario_nombre']) ? $_SESSION['usuario_nombre'] : 'Usuario'; ?>
+        Hola, <?php echo isset($_SESSION['usuario_nombre']) ? $_SESSION['usuario_nombre'] : 'Usuario'; ?>
       </span>
     </div>
     <a href="extras/logout.php" class="btn-logout" title="Cerrar Sesión">
@@ -63,28 +65,28 @@
 
       <div class="cards-grid">
   
-  <button class="dashboard-card" onclick="alert('Abrir modal: Nuevo Préstamo')">
+  <button class="dashboard-card" onclick="openModalPrestamo()">
     <div class="card-icon">
       <i data-lucide="hand-coins" class="icon-svg"></i>
     </div>
     <h3 class="card-title">Nuevo Préstamo</h3>
   </button>
 
-  <button class="dashboard-card" onclick="alert('Abrir modal: Reservar Cancha')">
+  <button class="dashboard-card" onclick="openModalReserva()">
     <div class="card-icon">
       <i data-lucide="layout-grid" class="icon-svg"></i>
     </div>
     <h3 class="card-title">Reservar Cancha</h3>
   </button>
 
-  <button class="dashboard-card" onclick="alert('Abrir modal: Mis Eventos')">
+  <button class="dashboard-card" onclick="openModalEventos()">
     <div class="card-icon">
       <i data-lucide="calendar-days" class="icon-svg"></i>
     </div>
     <h3 class="card-title">Mis Eventos</h3>
   </button>
 
-  <button class="dashboard-card" onclick="alert('Abrir modal: Historial')">
+  <button class="dashboard-card" onclick="openModalHistorial()">
     <div class="card-icon">
       <i data-lucide="history" class="icon-svg"></i>
     </div>
@@ -107,6 +109,124 @@
     </script>
     <script>
   lucide.createIcons();
+</script>
+<!-- MODAL PRESTAMO -->
+<div id="modalPrestamo" class="modal-overlay hidden">
+  <div class="modal-content modal-medium">
+    <header class="modal-header">
+      <h2><i class="fa-solid fa-hand-holding"></i> Nuevo Préstamo de Material</h2>
+      <button class="close-modal-btn" onclick="closeModalPrestamo()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </header>
+    <div class="modal-body">
+      <form id="formPrestamo" class="form-diseno" onsubmit="event.preventDefault(); registrarPrestamo();">
+        <div class="form-group custom-dropdown-group">
+          <label>Materiales Disponibles:</label>
+          <div id="listaMaterialesDisponibles" class="lista-materiales-check drop-version" style="max-height: 150px; overflow-y:auto; border:1px solid #ccc; padding:10px; margin-bottom:10px;">
+            Cargando...
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Fecha Límite:</label>
+          <input type="date" id="fechaLimitePrestamo" required>
+        </div>
+        <div class="form-actions-edit">
+          <button type="submit" class="btn-guinda"><i class="fa-solid fa-check"></i> Solicitar Préstamo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RESERVAR CANCHA -->
+<div id="modalReserva" class="modal-overlay hidden">
+  <div class="modal-content modal-medium">
+    <header class="modal-header">
+      <h2><i class="fa-solid fa-calendar-check"></i> Reservar Cancha</h2>
+      <button class="close-modal-btn" onclick="closeModalReserva()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </header>
+    <div class="modal-body">
+      <form id="formReserva" class="form-diseno" onsubmit="event.preventDefault(); registrarReserva();">
+        <div class="form-group">
+          <label>Espacio Deportivo:</label>
+          <select id="selectEspacio" required>
+            <option value="">Seleccione...</option>
+          </select>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Fecha y Hora Inicio:</label>
+            <input type="datetime-local" id="fechaInicioReserva" required>
+          </div>
+          <div class="form-group">
+            <label>Fecha y Hora Fin:</label>
+            <input type="datetime-local" id="fechaFinReserva" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Motivo:</label>
+          <input type="text" id="motivoReserva" required placeholder="Motivo de la reserva">
+        </div>
+        <div class="form-actions-edit">
+          <button type="submit" class="btn-guinda"><i class="fa-solid fa-check"></i> Solicitar Reserva</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MIS EVENTOS -->
+<div id="modalEventosDashboard" class="modal-overlay hidden">
+  <div class="modal-content modal-large">
+    <header class="modal-header">
+      <h2><i class="fa-solid fa-calendar-days"></i> Eventos Activos</h2>
+      <button class="close-modal-btn" onclick="closeModalEventos()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </header>
+    <div class="modal-body">
+      <div id="listaEventos" class="event-list-container">
+        Cargando eventos...
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL HISTORIAL -->
+<div id="modalHistorial" class="modal-overlay hidden">
+  <div class="modal-content modal-large">
+    <header class="modal-header">
+      <h2><i class="fa-solid fa-history"></i> Mi Historial de Préstamos</h2>
+      <button class="close-modal-btn" onclick="closeModalHistorial()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </header>
+    <div class="modal-body">
+      <div class="table-responsive">
+        <table id="tablaHistorialUsuario" class="custom-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Materiales</th>
+              <th>Solicitud</th>
+              <th>Límite</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Dynamic content -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const currentUserId = <?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 'null'; ?>;
 </script>
 <script src="modal-js/modal-dashboard.js"></script>
 </section>

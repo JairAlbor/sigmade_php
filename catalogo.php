@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/png" href="css/logoSigmade.png">
     <title>Catálogo de Material</title>
-    <link rel="stylesheet" href="css/nav-bar.css" />
+    <link rel="stylesheet" href="css/navBar.css" />
     <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/cssdisenCat.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
@@ -24,7 +24,7 @@
     ?>
 
     <nav class="navbar">
-        <div class="logo">SIGMADE</div>
+        <div class="logo"><img src="css/logoSigmade.png" alt="Logo SIGMADE" width="100px" height="90px"></div>
         <ul class="nav-menu">
             <?php if ($_SESSION['rol'] == 'Admin' || $_SESSION['rol'] == 'Operador') { ?>
                 <li class="nav-item" onclick="window.location.href = 'administacion.php'">Inicio</li>
@@ -43,7 +43,7 @@
                 <div class="user-avatar">
                     <i data-lucide="user" class="icon-user"></i>
                 </div>
-                <span id="userName" class="user-name"><?php echo isset($_SESSION['usuario_nombre']) ? $_SESSION['usuario_nombre'] : 'Usuario'; ?></span>
+                <span id="userName" class="user-name">Hola, <?php echo isset($_SESSION['usuario_nombre']) ? $_SESSION['usuario_nombre'] : 'Usuario'; ?></span>
             </div>
             <a href="extras/logout.php" class="btn-logout" title="Cerrar Sesión">
                 <i data-lucide="log-out" class="icon-logout"></i>
