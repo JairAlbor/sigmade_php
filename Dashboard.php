@@ -55,11 +55,11 @@
       <h2 class="dashboard-title">Dashboard</h2>
 
       <div class="dashboard-grid">
-        <article class="adeudos-card">
-          <i data-lucide="check-circle" class="check-icon"></i>
+        <article class="adeudos-card" id="adeudosCard">
+          <i class="fa-solid fa-award check-icon" id="adeudosIcon" style="color: #ffffff;"></i>
           <div class="adeudos-content">
-            <h3 class="adeudos-title">Sin adeudos pendientes</h3>
-            <p class="adeudos-subtext">Tu cuenta se encuentra al día.</p>
+            <h3 class="adeudos-title" id="adeudosTitle">Sin adeudos pendientes</h3>
+            <p class="adeudos-subtext" id="adeudosSubtext">Tu cuenta se encuentra al día.</p>
           </div>
         </article>
 
@@ -129,7 +129,7 @@
         </div>
         <div class="form-group">
           <label>Fecha Límite:</label>
-          <input type="date" id="fechaLimitePrestamo" required>
+          <input type="datetime-local" id="fechaLimitePrestamo" required>
         </div>
         <div class="form-actions-edit">
           <button type="submit" class="btn-guinda"><i class="fa-solid fa-check"></i> Solicitar Préstamo</button>
@@ -150,11 +150,11 @@
     </header>
     <div class="modal-body">
       <form id="formReserva" class="form-diseno" onsubmit="event.preventDefault(); registrarReserva();">
-        <div class="form-group">
-          <label>Espacio Deportivo:</label>
-          <select id="selectEspacio" required>
-            <option value="">Seleccione...</option>
-          </select>
+        <div class="form-group custom-dropdown-group">
+          <label>Cancha a Reservar:</label>
+          <div id="listaEspaciosDisponibles" class="lista-materiales-check drop-version" style="max-height: 150px; overflow-y:auto; border:1px solid #ccc; padding:10px; margin-bottom:10px;">
+            Cargando...
+          </div>
         </div>
         <div class="form-grid">
           <div class="form-group">
@@ -214,6 +214,7 @@
               <th>Solicitud</th>
               <th>Límite</th>
               <th>Estado</th>
+              <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
@@ -228,7 +229,7 @@
 <script>
   const currentUserId = <?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 'null'; ?>;
 </script>
-<script src="modal-js/modal-dashboard.js"></script>
+<script src="modal-js/modal-dashboard.js?v=<?php echo time(); ?>"></script>
 </section>
   </body>
 </html>

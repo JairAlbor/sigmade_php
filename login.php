@@ -12,9 +12,9 @@
 <body>
 
     <nav class="navbar">
-        <div class="logo"><img src="css/logoSigmade.png" alt="Logo SIGMADE" width="100px" height="90px"></div>
+        <div ><img src="css/logoSigmade.png" alt="Logo SIGMADE" width="100px" height="90px" style="margin-left: 20px;"></div>
         <div class="imagenLogo">
-            <img src="css/uuutm.png" alt="Logo UTM" width="180px" height="57px">
+            <img src="css/uuutm.png" alt="Logo UTM" width="180px" height="57px" style="margin-right: 20px;">
         </div>
     </nav>
 

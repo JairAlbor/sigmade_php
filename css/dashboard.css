@@ -4,7 +4,7 @@
   margin: 0 auto;
   padding: 2rem 1rem;
   flex: 1;
-  
+
 }
 
 .dashboard-title {
@@ -12,7 +12,7 @@
   font-weight: 600;
   color: #ffffff;
   margin-bottom: 1.5rem;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .dashboard-grid {
@@ -38,6 +38,11 @@
 .check-icon {
   width: 4.5rem;
   height: 4.5rem;
+  font-size: 4.5rem;
+  /* Fix for FontAwesome */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 1.2rem;
 }
 
@@ -70,11 +75,16 @@
 
 .dashboard-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 20px rgba(0,0,0,0.1);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
 }
 
 .icon-svg {
   width: 2.2rem;
   height: 2.2rem;
   color: #374151;
+}
+
+.form-group input {
+  width: 35%;
+  margin-right: 5px;
 }

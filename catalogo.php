@@ -118,7 +118,7 @@
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-            <form id="formArticuloAct" action="CRUD/actualizarMat.php" method="post">
+            <form id="formArticuloAct" action="CRUD/actualizarMat.php" method="post" enctype="multipart/form-data">
                 <input type="hidden" name="id" id="idMaterialAct">
                 <div class="form-grid">
                     <input type="text" name="nombreArticulo" id="nombreArticuloAct" placeholder="Nombre del artículo" required />
@@ -156,6 +156,11 @@
                         <option value="Reservado">Reservado</option>
                         <option value="Ocupado">Ocupado</option>
                     </select>
+
+                    <div class="file-input-wrapper" style="grid-column: 1 / -1; margin-top: 10px;">
+                        <label for="imagenAct"><i class="fa-solid fa-image"></i> Cambiar imagen (Opcional)</label>
+                        <input type="file" id="imagenAct" name="imagenAct" accept="image/*" />
+                    </div>
                 </div>
                 <div class="form-actions">
                     <button type="button" class="btn-secundario" onclick="cerrarModales()">Cancelar</button>
@@ -263,6 +268,7 @@
                 <table class="material-table" id="tablaMateriales">
                     <thead>
                         <tr>
+                            <th style="text-align: center;">Imagen</th>
                             <th>Artículo</th>
                             <th>Categoría</th>
                             <th>Tipo Material</th>
@@ -276,7 +282,7 @@
                     <tbody id="tabla-cuerpo">
                         <?php
                         $consulta = 'SELECT m.id, m.nombre AS nombre_material, d.nombre AS nombre_disciplina, 
-                                    m.disciplina_id, m.tipoMaterial, m.estado, m.disponible 
+                                    m.disciplina_id, m.tipoMaterial, m.estado, m.disponible, m.foto_url 
                                     FROM material m 
                                     JOIN disciplina d ON m.disciplina_id = d.id';
                         $resultado = mysqli_query($conn, $consulta);
@@ -285,9 +291,14 @@
                             while ($fila = mysqli_fetch_assoc($resultado)) {
                                 $claseDisponible = $fila['disponible'] == 'Libre' ? 'disponible-libre' : 'disponible-no-libre';
                                 $claseEstado = strtolower(str_replace(' ', '-', $fila['estado']));
+                                
+                                $fotoUrl = !empty($fila['foto_url']) ? $fila['foto_url'] : 'css/logoSigmade.png';
+                                
                                 echo "<tr data-nombre='" . htmlspecialchars($fila['nombre_material']) . "' 
                                           data-disciplina='" . htmlspecialchars($fila['nombre_disciplina']) . "'
                                           data-tipo='" . htmlspecialchars($fila['tipoMaterial']) . "'>";
+                                          
+                                echo "<td style='text-align:center;'><img src='" . htmlspecialchars($fotoUrl) . "' style='width: 80px; height: 70px; object-fit: cover; border-radius: 8px;' onerror='this.src=\"css/logoSigmade.png\"'></td>";
                                 echo "<td>" . htmlspecialchars($fila['nombre_material']) . "</td>";
                                 echo "<td>" . htmlspecialchars($fila['nombre_disciplina']) . "</td>";
                                 echo "<td>" . htmlspecialchars($fila['tipoMaterial']) . "</td>";
@@ -314,7 +325,7 @@
                                 echo "</tr>";
                             }
                         } else {
-                            echo "<tr><td colspan='6' class='text-center'>No se encontraron materiales.</td></tr>";
+                            echo "<tr><td colspan='7' class='text-center'>No se encontraron materiales.</td></tr>";
                         }
                         ?>
                     </tbody>

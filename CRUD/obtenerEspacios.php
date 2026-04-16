@@ -2,7 +2,7 @@
 header('Content-Type: application/json');
 include('conexion.php');
 
-$sql = "SELECT id, nombre, capacidad FROM espacio";
+$sql = "SELECT id, nombre, foto_url FROM material where LOWER(disponible) = 'libre' and tipoMaterial = 'Cancha'";
 $result = mysqli_query($conn, $sql);
 $espacios = [];
 

@@ -3,7 +3,7 @@ header('Content-Type: application/json');
 include('conexion.php');
 
 // Usamos LOWER() para ignorar mayúsculas/minúsculas en el valor de disponible
-$sql = "SELECT id, nombre, estado FROM material WHERE LOWER(disponible) = 'libre'";
+$sql = "SELECT id, nombre, estado, foto_url FROM material WHERE LOWER(disponible) = 'libre'";
 $result = mysqli_query($conn, $sql);
 $materiales = [];
 

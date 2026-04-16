@@ -14,15 +14,15 @@ if (!$id || !$estado) {
 $id = mysqli_real_escape_string($conn, $id);
 $estado = mysqli_real_escape_string($conn, $estado);
 
-if ($estado === 'Activo') {
-    $sql = "UPDATE prestamo SET estado_general = '$estado', fecha_entrega = CURDATE() WHERE id = $id";
-} else {
+try {
     $sql = "UPDATE prestamo SET estado_general = '$estado' WHERE id = $id";
-}
 
-if (mysqli_query($conn, $sql)) {
-    echo json_encode(['success' => true, 'message' => "Estado actualizado a $estado"]);
-} else {
-    echo json_encode(['success' => false, 'message' => "Error al actualizar estado: " . mysqli_error($conn)]);
+    if (mysqli_query($conn, $sql)) {
+        echo json_encode(['success' => true, 'message' => "Estado actualizado a $estado"]);
+    } else {
+        echo json_encode(['success' => false, 'message' => "Error al actualizar estado: " . mysqli_error($conn)]);
+    }
+} catch (Exception $e) {
+    echo json_encode(['success' => false, 'message' => "Excepción al actualizar estado: " . $e->getMessage()]);
 }
 ?>

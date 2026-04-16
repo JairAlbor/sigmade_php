@@ -146,12 +146,18 @@
 
       <div class="modal-body">
         <!-- Controles de filtrado y búsqueda -->
-        <div class="controls-container">
-          <div class="search-bar-container">
-            <div class="search-input-wrapper">
+        <div class="controls-container" style="flex-wrap: wrap; gap: 10px;">
+          <div class="search-bar-container" style="display: flex; gap: 10px; align-items: center;">
+            <div class="search-input-wrapper" style="flex: 1;">
               <i class="fa-solid fa-magnifying-glass"></i>
-              <input type="text" id="buscarPrestamo" placeholder="Buscar por usuario, materiales o estado...">
+              <input type="text" id="buscarPrestamo" placeholder="Buscar por usuario, materiales o estado..." oninput="filtrarPrestamos()">
             </div>
+            <!-- Nuevo: Filtro Diario Rápido -->
+            <input type="date" id="filtroRapidoDia" class="filtro-select" style="padding: 8px; border: 1px solid #ccc; border-radius: 5px;" title="Ver solicitudes de un día exacto" onchange="filtrarPrestamos()">
+            <!-- Nuevo: Botón PDF -->
+            <button class="btn-principal" onclick="exportarPrestamosPDF()" style="background-color: #2e7d32; border-radius: 5px;">
+              <i class="fa-solid fa-file-pdf"></i> PDF
+            </button>
           </div>
           <button class="btn-secondary" onclick="toggleFiltrosPrestamos()">
             <i class="fa-solid fa-filter"></i> Filtros
@@ -211,9 +217,19 @@
           </div>
         </div>
 
+        <!-- Tabs Activos vs Finalizados -->
+        <div class="admin-tabs" style="display:flex; margin-bottom: 10px; gap: 5px;">
+          <button id="tabPrestamosActivos" class="tab-btn active" onclick="cambiarPestañaPrestamos('activos')" style="flex:1; padding: 10px; border:none; background:#7a1030; color:white; border-radius: 5px; cursor: pointer; font-weight: 600;">
+            <i class="fa-solid fa-clock"></i> En Curso y Pendientes
+          </button>
+          <button id="tabPrestamosFinalizados" class="tab-btn" onclick="cambiarPestañaPrestamos('finalizados')" style="flex:1; padding: 10px; border:1px solid #ccc; background:#eee; color:#333; border-radius: 5px; cursor: pointer; font-weight: 600;">
+            <i class="fa-solid fa-box-archive"></i> Archivo Terminado
+          </button>
+        </div>
+
        <!-- Tabla de préstamos modificada -->
-<div class="table-responsive">
-  <table class="custom-table">
+<div class="table-responsive" id="areaImpresionPDF">
+  <table class="custom-table" id="tablaExportPDF">
     <thead>
       <tr>
         <th>Usuario</th>
@@ -733,6 +749,7 @@
     </div>
   </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script>
     lucide.createIcons();

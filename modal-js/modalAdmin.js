@@ -130,10 +130,14 @@ window.openEventModal = function () {
 
 // ========== FUNCIONES PARA PRÉSTAMOS ==========
 
+window.currentPrestamoTab = 'activos';
+window.todosLosPrestamos = [];
+
 function cargarPrestamos() {
     fetch('CRUD/obtenerPrestamos.php')
         .then(response => response.json())
         .then(data => {
+            window.todosLosPrestamos = data;
             actualizarTablaPrestamos(data);
             actualizarEstadisticasPrestamos(data);
             actualizarEstadisticasDashboard();
@@ -151,12 +155,21 @@ function actualizarTablaPrestamos(prestamos) {
     const tbody = document.getElementById('tablaPrestamosBody');
     if (!tbody) return;
 
-    if (!prestamos || prestamos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No hay préstamos registrados</td></tr>';
+    let prestamosFiltradosTab = prestamos;
+    
+    // Filtrar por pestaña
+    if (window.currentPrestamoTab === 'activos') {
+        prestamosFiltradosTab = prestamos.filter(p => ['Pendiente', 'Aprobado', 'Activo', 'Prestado'].includes(p.estado_general));
+    } else {
+        prestamosFiltradosTab = prestamos.filter(p => !['Pendiente', 'Aprobado', 'Activo', 'Prestado'].includes(p.estado_general));
+    }
+
+    if (!prestamosFiltradosTab || prestamosFiltradosTab.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No hay préstamos en esta categoría</td></tr>';
         return;
     }
 
-    tbody.innerHTML = prestamos.map(prestamo => {
+    tbody.innerHTML = prestamosFiltradosTab.map(prestamo => {
         const estadoClass = obtenerClaseEstado(prestamo.estado_general);
         let estadoTexto = prestamo.estado_general;
 
@@ -192,6 +205,7 @@ function actualizarTablaPrestamos(prestamos) {
 
         return `
             <tr data-estado="${prestamo.estado_general}" 
+                data-fecha-solicitud="${prestamo.fecha_solicitud || ''}"
                 data-fecha-limite="${prestamo.fecha_limite || ''}"
                 data-prestamo-id="${prestamo.prestamo_id}">
                 <td>${escapeHtml(prestamo.usuario_nombre)} ${escapeHtml(prestamo.usuario_apellidos || '')}</td>
@@ -200,7 +214,7 @@ function actualizarTablaPrestamos(prestamos) {
                 <td>${formatFecha(prestamo.fecha_limite)}</td>
                 <td><span class="status-pill ${estadoClass}">${estadoTexto}</span></td>
                 <td class="${diasClass}">${diasTexto}</td>
-                <td class="actions">
+                <td class="actions-col actions">
                     ${prestamo.estado_general === 'Pendiente' ?
                 `<button class="btn-icon" onclick="cambiarEstadoPrestamo(${prestamo.prestamo_id}, 'Aprobado')" title="Aprobar Solicitud">
                             <i class="fa-solid fa-thumbs-up"></i>
@@ -232,6 +246,19 @@ function actualizarTablaPrestamos(prestamos) {
         `;
     }).join('');
 }
+
+window.cambiarPestañaPrestamos = function (tabName) {
+    window.currentPrestamoTab = tabName;
+    
+    document.getElementById('tabPrestamosActivos').style.background = tabName === 'activos' ? '#7a1030' : '#eee';
+    document.getElementById('tabPrestamosActivos').style.color = tabName === 'activos' ? 'white' : '#333';
+    
+    document.getElementById('tabPrestamosFinalizados').style.background = tabName === 'finalizados' ? '#7a1030' : '#eee';
+    document.getElementById('tabPrestamosFinalizados').style.color = tabName === 'finalizados' ? 'white' : '#333';
+    
+    actualizarTablaPrestamos(window.todosLosPrestamos);
+    filtrarPrestamos();
+};
 
 window.cambiarEstadoPrestamo = function (id, nuevoEstado) {
     if (confirm(`¿Confirmar que desea cambiar el estado a ${nuevoEstado}?`)) {
@@ -456,21 +483,26 @@ function cargarMaterialesParaSelect() {
                 return;
             }
 
-            lista.innerHTML = materiales.map(m => `
-                <div class="material-check-item" id="item-${m.id}">
+            lista.innerHTML = materiales.map(m => {
+                const fotoUrl = m.foto_url ? m.foto_url : 'css/logoSigmade.png';
+                return `
+                <div class="material-check-item" id="item-${m.id}" style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f0f0f0; padding: 5px 0;">
                     <input 
                         type="checkbox" 
                         id="mat-${m.id}" 
                         name="materiales[]" 
                         value="${m.id}"
                         onchange="actualizarResumenSeleccion()"
+                        style="transform: scale(1.1); margin-right: 5px;"
                     >
-                    <label for="mat-${m.id}">
-                        <span>${escapeHtml(m.nombre)}</span>
-                        <span class="material-estado-badge">${escapeHtml(m.estado)}</span>
+                    <img src="${fotoUrl}" onerror="this.src='css/logoSigmade.png'" style="width: 80px; height: 70px; object-fit: cover; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <label for="mat-${m.id}" style="display: flex; flex-direction: column; cursor: pointer; flex: 1;">
+                        <span style="font-weight: 500;">${escapeHtml(m.nombre)}</span>
+                        <span class="material-estado-badge" style="width: fit-content; margin-top: 4px;">${escapeHtml(m.estado)}</span>
                     </label>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         })
         .catch(() => {
             lista.innerHTML = '<p style="padding:10px; color:red; text-align:center;"><i class="fa-solid fa-triangle-exclamation"></i> Error al cargar materiales.</p>';
@@ -514,11 +546,12 @@ window.toggleMaterialesDropdown = function (event) {
     }
 };
 
-function filtrarPrestamos() {
+    window.filtrarPrestamos = function() {
     const busqueda = document.getElementById('buscarPrestamo')?.value.toLowerCase() || '';
     const estadoFiltro = document.getElementById('filtroEstadoPrestamo')?.value || '';
     const fechaInicio = document.getElementById('filtroFechaInicio')?.value;
     const fechaFin = document.getElementById('filtroFechaFin')?.value;
+    const diaRapido = document.getElementById('filtroRapidoDia')?.value;
 
     const filas = document.querySelectorAll('#tablaPrestamosBody tr');
 
@@ -535,8 +568,14 @@ function filtrarPrestamos() {
             if (estadoCelda && estadoCelda.textContent !== estadoFiltro) mostrar = false;
         }
 
+        const fechaSolicitud = fila.dataset.fechaSolicitud?.split(' ')[0] || fila.dataset.fechaSolicitud; // just get date
+        
+        if (mostrar && diaRapido) {
+            if (fechaSolicitud !== diaRapido) mostrar = false;
+        }
+
         if (mostrar && (fechaInicio || fechaFin)) {
-            const fechaLimite = fila.dataset.fechaLimite;
+            const fechaLimite = fila.dataset.fechaLimite?.split(' ')[0] || fila.dataset.fechaLimite;
             if (fechaLimite) {
                 if (fechaInicio && fechaLimite < fechaInicio) mostrar = false;
                 if (fechaFin && fechaLimite > fechaFin) mostrar = false;
@@ -553,7 +592,7 @@ window.toggleFiltrosPrestamos = function () {
 };
 
 window.limpiarFiltrosPrestamos = function () {
-    const campos = ['buscarPrestamo', 'filtroEstadoPrestamo', 'filtroFechaInicio', 'filtroFechaFin'];
+    const campos = ['buscarPrestamo', 'filtroEstadoPrestamo', 'filtroFechaInicio', 'filtroFechaFin', 'filtroRapidoDia'];
     campos.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = '';
@@ -561,6 +600,37 @@ window.limpiarFiltrosPrestamos = function () {
 
     document.querySelectorAll('#tablaPrestamosBody tr').forEach(fila => {
         fila.style.display = '';
+    });
+    filtrarPrestamos();
+};
+
+window.exportarPrestamosPDF = function() {
+    const tableDiv = document.getElementById('areaImpresionPDF');
+    if (!tableDiv) return;
+
+    // Temporalmente ocultamos la columna acciones
+    const accionesHeader = document.querySelector('#tablaExportPDF th:last-child');
+    if (accionesHeader) accionesHeader.style.display = 'none';
+    
+    const accionesCells = document.querySelectorAll('#tablaExportPDF td.actions-col');
+    accionesCells.forEach(cell => cell.style.display = 'none');
+
+    // Nombres del reporte
+    const reportTitle = (window.currentPrestamoTab === 'activos') ? 'Reporte_Prestamos_Activos' : 'Reporte_Historial_Finalizadas';
+
+    var opt = {
+      margin:       10,
+      filename:     `${reportTitle}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2 },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+    };
+
+    // Crear PDF
+    html2pdf().set(opt).from(tableDiv).save().then(() => {
+        // Restaurar estado normal después de exportar
+        if (accionesHeader) accionesHeader.style.display = '';
+        accionesCells.forEach(cell => cell.style.display = '');
     });
 };
 

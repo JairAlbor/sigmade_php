@@ -356,7 +356,7 @@
     color: #333;
 }
 
-.form-group input,
+
 .form-group select,
 .form-group textarea {
     width: 100%;
@@ -365,6 +365,11 @@
     border-radius: 8px;
     font-size: 1rem;
     transition: border-color 0.2s;
+}
+
+.form-group input {
+    width: 35%;
+    margin-right: 5px;
 }
 
 .form-group input:focus,
@@ -621,6 +626,7 @@ select[multiple] option:hover {
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }
@@ -631,6 +637,7 @@ select[multiple] option:hover {
         opacity: 0;
         transform: scale(0.95);
     }
+
     to {
         opacity: 1;
         transform: scale(1);
@@ -642,6 +649,7 @@ select[multiple] option:hover {
         opacity: 0;
         transform: translateY(-10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -668,20 +676,20 @@ select[multiple] option:hover {
     .main-grid {
         flex-direction: column;
     }
-    
+
     .secondary-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .controls-container {
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     .stats-cards {
         justify-content: center;
     }
-    
+
     .modal-content {
         width: 95%;
         margin: 1rem;
@@ -692,11 +700,11 @@ select[multiple] option:hover {
     .secondary-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .stats-cards {
         flex-direction: column;
     }
-    
+
     .stat-card {
         width: 100%;
     }
@@ -802,69 +810,69 @@ select[multiple] option:hover {
 
 /* Lista de materiales con checkboxes */
 .lista-materiales-check {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  max-height: 220px;
-  overflow-y: auto;
-  padding: 6px;
-  background: #fafafa;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    max-height: 220px;
+    overflow-y: auto;
+    padding: 6px;
+    background: #fafafa;
 }
 
 .material-check-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
 }
 
 .material-check-item:hover {
-  background: #f0e6ea;
+    background: #f0e6ea;
 }
 
 .material-check-item input[type="checkbox"] {
-  accent-color: #7a1030;
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-  flex-shrink: 0;
+    accent-color: #7a1030;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    flex-shrink: 0;
 }
 
 .material-check-item label {
-  cursor: pointer;
-  flex: 1;
-  font-size: 0.9rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+    cursor: pointer;
+    flex: 1;
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .material-estado-badge {
-  font-size: 0.75rem;
-  padding: 2px 8px;
-  border-radius: 12px;
-  background: #e8f5e9;
-  color: #2e7d32;
-  font-weight: 500;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: #e8f5e9;
+    color: #2e7d32;
+    font-weight: 500;
 }
 
 .resumen-seleccion {
-  margin-top: 8px;
-  padding: 8px 12px;
-  background: #f0e6ea;
-  border-radius: 6px;
-  color: #7a1030;
-  font-size: 0.85rem;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 500;
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #f0e6ea;
+    border-radius: 6px;
+    color: #7a1030;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
 }
 
 .material-check-item.oculto {
-  display: none;
+    display: none;
 }
 
 /* ========== CUSTOM DROPDOWN ========== */
@@ -917,8 +925,9 @@ select[multiple] option:hover {
     border-top: none;
     border-bottom-left-radius: 8px;
     border-bottom-right-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    z-index: 1000; /* Asegurar que sobrepase otros elementos del modal */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    /* Asegurar que sobrepase otros elementos del modal */
 }
 
 .lista-materiales-check.drop-version {

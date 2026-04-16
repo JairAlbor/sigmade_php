@@ -24,6 +24,13 @@ $inicio = mysqli_real_escape_string($conn, $inicio);
 $fin = mysqli_real_escape_string($conn, $fin);
 $motivo = mysqli_real_escape_string($conn, $motivo);
 
+// Verificar si el usuario ya tiene una reserva Activa o Pendiente
+$check_user_reserva = mysqli_query($conn, "SELECT id FROM reserva WHERE usuario_id = $usuario_id AND estatus IN ('Pendiente', 'Confirmada')");
+if (mysqli_num_rows($check_user_reserva) > 0) {
+    echo json_encode(['success' => false, 'message' => 'Ya tienes una solicitud de cancha pendiente o confirmada. Debes finalizarla primero.']);
+    exit;
+}
+
 // Verificar superposición de reservas para el mismo espacio
 // Solo checamos las que estén confirmadas o pendientes (evita dobles reservas)
 $check = "SELECT id FROM reserva 
