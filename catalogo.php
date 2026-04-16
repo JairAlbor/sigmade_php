@@ -182,10 +182,10 @@
                 <!-- FILTROS RÁPIDOS (AGREGADOS) -->
                 <div class="filtros-rapidos">
                     <select id="filtroDisponibilidad" class="filtro-select">
-                        <option value="todos">📋 Todos los materiales</option>
-                        <option value="Libre">✅ Disponibles (Libres)</option>
-                        <option value="Reservado">🔄 Reservados</option>
-                        <option value="Ocupado">❌ Ocupados</option>
+                        <option value="todos"> Todos los materiales</option>
+                        <option value="Libre"> Disponibles (Libres)</option>
+                        <option value="Reservado"> Reservados</option>
+                        <option value="Ocupado"> Ocupados</option>
                     </select>
                     
                     <select id="filtroEstado" class="filtro-select">
@@ -193,7 +193,7 @@
                         <option value="Nuevo"> Nuevo</option>
                         <option value="Bueno"> Bueno</option>
                         <option value="Regular"> Regular</option>
-                        <option value="Muy-desgastado">🔧 Muy desgastado</option>
+                        <option value="Muy-desgastado"> Muy desgastado</option>
                         <option value="Roto"> Roto</option>
                     </select>
                     

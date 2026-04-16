@@ -33,7 +33,10 @@ foreach ($materiales as $material_id) {
     }
 }
 
-// Insertar préstamo
+// Iniciar transacción explícita
+mysqli_autocommit($conn, false);
+
+// Insertar préstamo principal
 $sql = "INSERT INTO prestamo (usuario_id, fecha_solicitud, fecha_limite, estado_general) 
         VALUES ($usuario_id, CURDATE(), '$fecha_limite', 'Pendiente')";
 
@@ -52,20 +55,27 @@ if (mysqli_query($conn, $sql)) {
             break;
         }
 
-        // Marcar material como Prestado
+        // Marcar material como Prestado en el inventario temporalmente reservado
         $sql_update = "UPDATE material SET disponible = 'Prestado' WHERE id = $mid";
-        mysqli_query($conn, $sql_update);
+        if (!mysqli_query($conn, $sql_update)) {
+            $success = false;
+            break;
+        }
     }
 
     if ($success) {
-        echo json_encode(['success' => true, 'message' => 'Préstamo registrado exitosamente']);
+        // Asegurar transaccion de forma permanente
+        mysqli_commit($conn);
+        echo json_encode(['success' => true, 'message' => 'Préstamo registrado exitosamente bajo alta disponibilidad.']);
     } else {
-        // Si algo falló, revertir el préstamo
-        mysqli_query($conn, "DELETE FROM detalle_prestamo WHERE prestamo_id = $prestamo_id");
-        mysqli_query($conn, "DELETE FROM prestamo WHERE id = $prestamo_id");
-        echo json_encode(['success' => false, 'message' => 'Error al registrar detalles del préstamo']);
+        // Ejecutar Rollback por prevención a corrupciones o desincronización
+        mysqli_rollback($conn);
+        echo json_encode(['success' => false, 'message' => 'El Préstamo fue declinado debido a un fallo en el registro. Ningún objeto fue reservado (Haciendo Rollback).']);
     }
 } else {
-    echo json_encode(['success' => false, 'message' => 'Error: ' . mysqli_error($conn)]);
+    echo json_encode(['success' => false, 'message' => 'Error Crítico: ' . mysqli_error($conn)]);
 }
+
+// Restaurar el comportamiento individual en base de datos
+mysqli_autocommit($conn, true);
 ?>
