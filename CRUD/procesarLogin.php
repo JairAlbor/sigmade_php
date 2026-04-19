@@ -21,19 +21,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $_SESSION['rol'] = $datos_usuario['rol'];
         $_SESSION['user_id'] = $datos_usuario['id'];
 
-    //identificamos el rol del usuario y lo redirigimos a la página correspondiente
-        if ($datos_usuario['rol'] == 'Admin' || $datos_usuario['rol'] == 'Operador') {
-            //enviamos al admin o operador a la página de administración que esta fuera de la carpeta CRUD
-           header("Location: ../administacion.php");
-
-            exit();
-        } elseif ($datos_usuario['rol'] != 'Admin' && $datos_usuario['rol'] != 'Operador') {
-            header("Location: ../Dashboard.php");
-            exit();
-        }
-
-        // Redirigir al panel principal
-        header("Location: index.php");
+        // Redirigimos a la página de inicio para que el usuario pueda visualizar la landing page
+        header("Location: ../index.php");
+        exit();
     } else {
         // Si falló, lo mandamos de vuelta con un error
         header("Location: login.php?error=1");

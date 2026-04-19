@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="../css/logoSigmade.png">
+    <title>SIGMADE - Acceso y Registro</title>
+    <link rel="stylesheet" href="../css/cssNuevo.css">
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <style>
+        /* Specific Styles for Premium Login Flip Card */
+        body.sg-login-page {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: var(--dark);
+            position: relative;
+            overflow: hidden;
+            flex-direction: column;
+        }
+
+        .sg-login-bg {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(139, 26, 43, 0.25) 0%, var(--dark) 70%);
+            z-index: 0;
+            animation: pulseGlow 6s infinite alternate;
+        }
+
+        .sg-nav-login {
+            position: absolute;
+            top: 2rem;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            z-index: 10;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .sg-nav-login .sg-nav-logo {
+            font-size: 48px;
+        }
+
+        /* Navigating away */
+        .sg-back-btn {
+            position: absolute;
+            top: 2rem;
+            left: 3rem;
+            color: rgba(232, 228, 220, 0.6);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.3s ease;
+            z-index: 10;
+        }
+
+        .sg-back-btn:hover {
+            color: var(--crimson-light);
+        }
+
+        .sg-card-wrapper {
+            position: relative;
+            width: 480px;
+            height: 600px;
+            perspective: 1500px;
+            z-index: 1;
+            margin-top: 4rem;
+        }
+
+        #flip-toggle {
+            display: none;
+        }
+
+        .sg-flip-card-inner {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+        }
+
+        #flip-toggle:checked ~ .sg-card-wrapper .sg-flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .sg-flip-front, .sg-flip-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            background: rgba(14, 12, 12, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(139, 26, 43, 0.3);
+            border-radius: 12px;
+            padding: 3rem 4rem;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .sg-flip-back {
+            transform: rotateY(180deg);
+            padding: 2.5rem 3rem;
+        }
+
+        .sg-flip-front::before, .sg-flip-back::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--crimson-dark), var(--crimson-light));
+            border-radius: 12px 12px 0 0;
+            box-shadow: 0 0 10px rgba(168, 32, 53, 0.5);
+        }
+
+        .sg-form-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 40px;
+            letter-spacing: 2px;
+            color: var(--off-white);
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px rgba(0,0,0, 0.5);
+        }
+
+        .sg-form-group {
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .sg-form-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: rgba(232, 228, 220, 0.6);
+            margin-bottom: 0.5rem;
+        }
+
+        .sg-form-group input, .sg-form-group select {
+            width: 100%;
+            background: rgba(26, 21, 21, 0.8);
+            border: 1px solid rgba(232, 228, 220, 0.1);
+            color: var(--off-white);
+            padding: 14px 16px;
+            font-family: 'Barlow', sans-serif;
+            font-size: 14px;
+            border-radius: 4px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .sg-form-group input:focus, .sg-form-group select:focus {
+            border-color: var(--crimson-light);
+            box-shadow: 0 0 15px rgba(168, 32, 53, 0.4);
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .sg-form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .sg-form-row .sg-form-group {
+            flex: 1;
+        }
+
+        .sg-scroll-form {
+            max-height: 380px;
+            overflow-y: auto;
+            padding-right: 15px;
+        }
+        
+        .sg-scroll-form::-webkit-scrollbar {
+            width: 6px;
+        }
+        .sg-scroll-form::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.2); 
+            border-radius: 4px;
+        }
+        .sg-scroll-form::-webkit-scrollbar-thumb {
+            background: var(--crimson-dark); 
+            border-radius: 4px;
+        }
+        .sg-scroll-form::-webkit-scrollbar-thumb:hover {
+            background: var(--crimson); 
+        }
+
+        .btn-submit-full {
+            width: 100%;
+            margin-top: 1.5rem;
+            font-size: 16px;
+            padding: 16px;
+        }
+
+        .sg-switch-text {
+            margin-top: 2rem;
+            font-size: 13px;
+            color: rgba(232, 228, 220, 0.5);
+        }
+
+        .sg-switch-text label {
+            color: var(--crimson-light);
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: text-shadow 0.3s ease, color 0.3s ease;
+        }
+
+        .sg-switch-text label:hover {
+            color: var(--off-white);
+            text-shadow: 0 0 10px var(--crimson-light);
+        }
+    </style>
+</head>
+<body class="sg sg-login-page">
+
+    <div class="sg-login-bg"></div>
+
+    <a href="demo_index.html" class="sg-back-btn">← Volver al Inicio</a>
+
+    <nav class="sg-nav-login">
+        <div class="sg-nav-logo">SIG<span>MADE</span></div>
+    </nav>
+
+    <input type="checkbox" id="flip-toggle">
+
+    <main class="sg-card-wrapper">
+        <div class="sg-flip-card-inner">
+            
+            <!-- CONTENEDOR DE INICIAR SESIÓN -->
+            <section class="sg-flip-front">
+                <h2 class="sg-form-title">Bienvenido</h2>
+                <form action="#" method="post" id="formLogin" onsubmit="event.preventDefault();">
+                    <div class="sg-form-group">
+                        <label for="loginMatri">Ingresa tu Matricula</label>
+                        <input type="text" id="loginMatri" name="email" placeholder="10203040" required />
+                    </div>
+
+                    <div class="sg-form-group">
+                        <label for="loginPassword">Contraseña</label>
+                        <input type="password" id="loginPassword" name="password" placeholder="••••••••" required />
+                    </div>
+                    
+                    <button id="login" type="submit" class="sg-btn-p btn-submit-full">Iniciar Sesión</button>
+                </form>
+                <div class="sg-switch-text">
+                    ¿Aún no te registras? <label for="flip-toggle">Regístrate aquí</label>
+                </div>
+            </section>
+
+            <!-- CONTENEDOR DE REGISTRO -->
+            <section class="sg-flip-back">
+                <h2 class="sg-form-title">Registro</h2>
+                <form id="formUsuarios" onsubmit="event.preventDefault();">
+                    <div class="sg-scroll-form">
+                        <div class="sg-form-group">
+                            <label for="rol">Tipo de usuario</label>
+                            <select id="rol" name="rol" required>
+                                <option value="">Selecciona</option>
+                                <option value="Alumno">Alumno</option>
+                                <option value="Docente">Entrenador</option>
+                                <option value="Admin">Administrador</option>
+                            </select>
+                        </div>
+                        
+                        <div class="sg-form-row">
+                            <div class="sg-form-group">
+                                <label for="nombre">Nombre(s)</label>
+                                <input type="text" id="nombre" name="nombre" placeholder="Escribe tu nombre" required />
+                            </div>
+                            <div class="sg-form-group">
+                                <label for="apellidos">Apellidos</label>
+                                <input type="text" id="apellidos" name="apellidos" placeholder="Escribe tus apellidos" required />
+                            </div>
+                        </div>
+
+                        <div class="sg-form-group">
+                            <label for="iden">Matrícula o ID</label>
+                            <input type="text" id="iden" name="iden" placeholder="Matricula/Número de trabajador" required />
+                        </div>
+
+                        <div class="sg-form-group">
+                            <label for="correo">Correo electrónico</label>
+                            <input type="email" id="correo" name="email" placeholder="correo@utm.mx" required />
+                        </div>
+
+                        <div class="sg-form-group">
+                            <label for="passwordUs">Contraseña</label>
+                            <input type="password" id="passwordUs" name="password" placeholder="Crea una contraseña" required />
+                        </div>
+                    </div>
+
+                    <button id="Registrar" type="submit" class="sg-btn-p btn-submit-full">Realizar registro</button>
+                </form>
+                <div class="sg-switch-text">
+                    ¿Ya tienes cuenta? <label for="flip-toggle">Inicia sesión</label>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+</body>
+</html>

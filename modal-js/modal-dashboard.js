@@ -13,18 +13,24 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ======= MODAL NUEVO PRESTAMO =======
+let _materialesCache = []; // cache global para búsqueda en tiempo real
+
 function openModalPrestamo() {
     const modal = document.getElementById('modalPrestamo');
     modal.classList.remove('hidden');
     modal.style.display = 'flex';
-    
-    // Default the date to today at 4 PM
-    const inputFecha = document.getElementById('fechaLimitePrestamo');
-    const hoy = new Date();
-    hoy.setHours(16, 0, 0, 0); // 4 PM local
-    const tzoffset = hoy.getTimezoneOffset() * 60000;
-    const localISOTime = (new Date(hoy - tzoffset)).toISOString().slice(0,16);
-    inputFecha.value = localISOTime;
+
+    // Default: inicio = ahora, límite = hoy a las 6 PM
+    const ahora = new Date();
+    const limite = new Date();
+    limite.setHours(18, 0, 0, 0);
+    const tzoffset = ahora.getTimezoneOffset() * 60000;
+    document.getElementById('fechaInicioPrestamo').value = (new Date(ahora - tzoffset)).toISOString().slice(0,16);
+    document.getElementById('fechaLimitePrestamo').value = (new Date(limite - tzoffset)).toISOString().slice(0,16);
+
+    // Limpiar buscador
+    const searchInput = document.getElementById('searchModalMaterial');
+    if (searchInput) searchInput.value = '';
 
     cargarMaterialesDisponibles();
 }
@@ -37,55 +43,102 @@ function cargarMaterialesDisponibles() {
     fetch('CRUD/obtenerMaterialesDisponibles.php')
         .then(res => res.json())
         .then(data => {
-            const container = document.getElementById('listaMaterialesDisponibles');
-            if (data.length === 0) {
-                container.innerHTML = '<p>No hay materiales libres</p>';
-                return;
-            }
-            container.innerHTML = data.map(m => {
-                const fotoUrl = m.foto_url ? m.foto_url : 'css/logoSigmade.png';
-                return `
-                <div style="margin-bottom:10px; display:flex; align-items:center; gap:10px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
-                    <input type="checkbox" name="materiales" value="${m.id}" id="mat_${m.id}">
-                    <img src="${fotoUrl}" onerror="this.src='css/logoSigmade.png'" style="width: 80px; height: 70px; object-fit: cover; border-radius: 5px;">
-                    <label for="mat_${m.id}" style="cursor: pointer; display:flex; flex-direction:column;">
-                        <strong>${m.nombre}</strong> 
-                        <small style="color: #666;">Estado: ${m.estado}</small>
-                    </label>
-                </div>
-                `;
-            }).join('');
+            _materialesCache = data;
+            renderizarMateriales(data);
+        })
+        .catch(() => {
+            document.getElementById('listaMaterialesDisponibles').innerHTML = '<p style="color:red;">Error cargando materiales</p>';
         });
 }
+
+function renderizarMateriales(data) {
+    const container = document.getElementById('listaMaterialesDisponibles');
+    if (!data || data.length === 0) {
+        container.innerHTML = '<p style="text-align:center; color:rgba(var(--text-primary-rgb),0.5); padding:10px;"><i class="fa-solid fa-box-open"></i> No hay materiales libres disponibles</p>';
+        return;
+    }
+    container.innerHTML = data.map(m => {
+        const fotoUrl = m.foto_url ? m.foto_url : 'css/logoSigmade.png';
+        const codigo = m.codigo_material || `MAT-${String(m.id).padStart(5,'0')}`;
+        const disciplina = m.disciplina || '';
+        return `
+        <div style="margin-bottom:8px; display:flex; align-items:center; gap:10px; border-bottom: 1px solid rgba(var(--text-primary-rgb),0.08); padding-bottom: 8px;">
+            <input type="checkbox" name="materiales" value="${m.id}" id="mat_${m.id}">
+            <img src="${fotoUrl}" onerror="this.src='css/logoSigmade.png'" style="width:60px; height:50px; object-fit:cover; border-radius:6px; flex-shrink:0;">
+            <label for="mat_${m.id}" style="cursor:pointer; display:flex; flex-direction:column; flex:1;">
+                <strong style="color:var(--off-white);">${m.nombre}</strong>
+                <small style="color:rgba(var(--text-primary-rgb),0.55);">
+                    <span style="font-family:monospace; background:rgba(139,26,43,0.15); color:var(--crimson-light); padding:1px 5px; border-radius:3px; font-size:0.75rem;">${codigo}</span>
+                    ${disciplina ? ' &bull; ' + disciplina : ''}
+                    &bull; Estado: ${m.estado}
+                </small>
+            </label>
+        </div>
+        `;
+    }).join('');
+}
+
+window.filtrarMaterialesEnModal = function(texto) {
+    const filtrado = _materialesCache.filter(m => {
+        const haystack = `${m.nombre} ${m.disciplina || ''} ${m.estado}`.toLowerCase();
+        return haystack.includes(texto.toLowerCase());
+    });
+    renderizarMateriales(filtrado);
+};
 function registrarPrestamo() {
     const seleccionados = Array.from(document.querySelectorAll('input[name="materiales"]:checked')).map(cb => cb.value);
+    const fechaInicio = document.getElementById('fechaInicioPrestamo').value;
     const fechaLimite = document.getElementById('fechaLimitePrestamo').value;
 
-    if (seleccionados.length === 0) return alert('Selecciona al menos un material');
-    if (!fechaLimite) return alert('Selecciona una fecha límite');
-    if (!currentUserId) return alert('Error de sesión');
+    if (seleccionados.length === 0) {
+        Swal.fire({ icon: 'warning', title: 'Sin material', text: 'Selecciona al menos un material', confirmButtonColor: '#8B1A2B' });
+        return;
+    }
+    if (!fechaInicio || !fechaLimite) {
+        Swal.fire({ icon: 'warning', title: 'Fechas incompletas', text: 'Debes seleccionar fecha de inicio y fecha límite', confirmButtonColor: '#8B1A2B' });
+        return;
+    }
+    if (new Date(fechaLimite) <= new Date(fechaInicio)) {
+        Swal.fire({ icon: 'error', title: 'Fechas inválidas', text: 'La fecha límite debe ser posterior a la fecha de inicio', confirmButtonColor: '#8B1A2B' });
+        return;
+    }
+    if (!currentUserId) {
+        Swal.fire({ icon: 'error', title: 'Error de sesión', text: 'Vuelve a iniciar sesión', confirmButtonColor: '#8B1A2B' });
+        return;
+    }
 
     const formData = new URLSearchParams();
     formData.append('usuario_id', currentUserId);
+    formData.append('fecha_inicio', fechaInicio);
     formData.append('fecha_limite', fechaLimite);
     seleccionados.forEach(id => formData.append('materiales[]', id));
 
     fetch('CRUD/registrarPrestamo.php', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: formData.toString()
     })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                alert('Préstamo solicitado. En espera de aprobación.');
-                closeModalPrestamo();
-            } else {
-                alert(data.message || 'Error al solicitar el préstamo');
-            }
-        });
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Solicitud Enviada!',
+                text: 'Tu préstamo está en espera de aprobación del administrador.',
+                confirmButtonColor: '#8B1A2B'
+            }).then(() => closeModalPrestamo());
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'No se pudo registrar',
+                html: `<p>${data.message}</p>`,
+                confirmButtonColor: '#8B1A2B'
+            });
+        }
+    })
+    .catch(() => {
+        Swal.fire({ icon: 'error', title: 'Error de red', text: 'No se pudo conectar con el servidor', confirmButtonColor: '#8B1A2B' });
+    });
 }
 
 // ======= MODAL RESERVAR CANCHA =======

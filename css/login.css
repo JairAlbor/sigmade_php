@@ -1,122 +1,272 @@
-/* =========================================
-   LOGIN.CSS - MÓDULO DE AUTENTICACIÓN
-   ========================================= */
+/* Specific Styles for Premium Login Flip Card */
+body.sg-login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: var(--dark);
+    position: relative;
+    overflow: hidden;
+    flex-direction: column;
+}
 
-#flip-toggle { display: none; }
+.sg-login-bg {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 50%, rgba(139, 26, 43, 0.2) 0%, var(--dark) 70%);
+    z-index: 0;
+    animation: pulseGlow 6s infinite alternate;
+}
 
-.mainContainer {
-    perspective: 1000px;
+.sg-back-btn {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    background: rgba(var(--bg-secondary-rgb), 0.5);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(139, 26, 43, 0.3);
+    border-radius: 50px;
+    color: var(--off-white);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.sg-back-btn i {
+    width: 18px;
+    height: 18px;
+}
+
+.sg-back-btn:hover {
+    background: rgba(139, 26, 43, 0.8);
+    border-color: var(--crimson-light);
+    transform: translateX(-5px);
+    box-shadow: 0 0 20px rgba(139, 26, 43, 0.5);
+    color: #fff;
+}
+
+[data-theme="light"] .sg-back-btn {
+    background: rgba(255, 255, 255, 0.8);
+    color: rgb(var(--text-primary-rgb));
+    border-color: rgba(139, 26, 43, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+[data-theme="light"] .sg-back-btn:hover {
+    background: var(--crimson);
+    color: #fff;
+}
+
+.sg-nav-login {
+    position: absolute;
+    top: 2rem;
+    width: 100%;
     display: flex;
     justify-content: center;
+    z-index: 10;
+    gap: 2rem;
     align-items: center;
-    flex: 1;
-    padding: 40px 20px;
-    min-height: calc(100vh - 80px);
 }
 
-.flip-card {
-    width: 100%;
-    max-width: 450px;
-    position: relative;
+.sg-nav-login .sg-nav-logo {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    font-family: 'Barlow', sans-serif;
+    color: var(--off-white);
 }
 
-.flip-card-inner {
+.sg-nav-login .sg-nav-logo span {
+    color: var(--crimson-light);
+}
+
+.sg-card-wrapper {
     position: relative;
+    width: 440px;
+    height: 600px;
+    perspective: 1500px;
+    z-index: 1;
+    margin-top: 4rem;
+}
+
+#flip-toggle {
+    display: none;
+}
+
+.sg-flip-card-inner {
+    position: absolute;
     width: 100%;
-    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    height: 100%;
+    text-align: center;
+    transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     transform-style: preserve-3d;
-    display: grid;
 }
 
-#flip-toggle:checked + .mainContainer .flip-card-inner {
+#flip-toggle:checked ~ .sg-card-wrapper .sg-flip-card-inner {
     transform: rotateY(180deg);
 }
 
-/* Contenedores de las caras (Front/Back) */
-.flip-front, .flip-back {
-    grid-area: 1 / 1 / 2 / 2;
+.sg-flip-front, .sg-flip-back {
+    position: absolute;
     width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
-    background-color: rgba(103, 103, 103, 0.15); 
-    backdrop-filter: blur(15px);
-    border-radius: 1.5rem;
-    padding: 2.5rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    background: rgba(var(--bg-secondary-rgb), 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(139, 26, 43, 0.3);
+    border-radius: 12px;
+    padding: 3rem 4rem;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.7);
     display: flex;
     flex-direction: column;
-    height: max-content; 
+    justify-content: center;
 }
 
-.flip-front { z-index: 2; }
-.flip-back { transform: rotateY(180deg); }
-
-/* Control de visibilidad para evitar clics en la cara oculta */
-#flip-toggle:not(:checked) + .mainContainer .flip-back { visibility: hidden; }
-#flip-toggle:checked + .mainContainer .flip-front { visibility: hidden; }
-
-/* Títulos */
-.flip-front h2, .flip-back h2 {
-    text-align: center;
-    color: #ffffff;
-    margin-bottom: 1.5rem;
-    font-size: 1.8rem;
-    font-weight: bold;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+.sg-flip-back {
+    transform: rotateY(180deg);
+    padding: 2.5rem 3rem;
 }
 
-/* Grupos y Labels */
-.form-group { margin-bottom: 1.2rem; text-align: left; }
-.form-group label {
+.sg-flip-front::before, .sg-flip-back::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--crimson-dark), var(--crimson-light));
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 0 10px rgba(168, 32, 53, 0.5);
+}
+
+.sg-form-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 2px;
+    color: var(--off-white);
+    margin-bottom: 2rem;
+    text-shadow: 0 0 10px rgba(0,0,0, 0.5);
+}
+
+.sg-form-group {
+    margin-bottom: 1.2rem;
+    text-align: left;
+}
+
+.sg-form-group label {
     display: block;
-    margin-bottom: 8px;
-    color: #ffffff;
+    font-size: 11px;
     font-weight: 600;
-    font-size: 0.9rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(var(--text-primary-rgb), 0.6);
+    margin-bottom: 0.5rem;
 }
 
-/* Inputs y Selects */
-input[type="text"], input[type="password"], input[type="email"], input[type="tel"], select {
+.sg-form-group input, .sg-form-group select {
     width: 100%;
-    padding: 12px;
-    border-radius: 8px;
-    border: 1px solid rgba(255,255,255,0.3);
-    background-color: #e8f0fe !important;
-    color: #1a1a1a;
+    background: rgba(var(--bg-primary-rgb), 0.8);
+    border: 1px solid rgba(var(--text-primary-rgb), 0.1);
+    color: var(--off-white);
+    padding: 12px 16px;
+    font-family: 'Barlow', sans-serif;
     font-size: 14px;
-    box-sizing: border-box;
-}
-
-/* Botón Submit */
-.btn-submit {
-    width: 100%;
-    padding: 14px;
-    background-color: #3b82f6;
-    color: #ffffff;
-    border: none;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 1.5rem;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    border-radius: 4px;
+    outline: none;
     transition: all 0.3s ease;
 }
 
-.btn-submit:hover {
-    background-color: #2563eb;
-    transform: translateY(-1px);
+.sg-form-group input:focus, .sg-form-group select:focus {
+    border-color: var(--crimson-light);
+    box-shadow: 0 0 15px rgba(168, 32, 53, 0.4);
+    background: rgba(0, 0, 0, 0.4);
 }
 
-/* Texto de cambio (Login/Registro) */
-.switch-text {
-    text-align: center;
-    margin-top: 1.5rem;
-    color: #ffffff;
-    font-size: 0.9rem;
+.sg-form-row {
+    display: flex;
+    gap: 15px;
 }
 
-.switch-text label {
-    color: #3b82f6;
+.sg-form-row .sg-form-group {
+    flex: 1;
+}
+
+.sg-scroll-form {
+    max-height: 380px;
+    overflow-y: auto;
+    padding-right: 15px;
+}
+
+.sg-scroll-form::-webkit-scrollbar {
+    width: 6px;
+}
+.sg-scroll-form::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.2); 
+    border-radius: 4px;
+}
+.sg-scroll-form::-webkit-scrollbar-thumb {
+    background: var(--crimson-dark); 
+    border-radius: 4px;
+}
+.sg-scroll-form::-webkit-scrollbar-thumb:hover {
+    background: var(--crimson); 
+}
+
+.sg-switch-text {
+    margin-top: 2rem;
+    font-size: 13px;
+    color: rgba(var(--text-primary-rgb), 0.5);
+}
+
+.sg-switch-text label {
+    color: var(--crimson-light);
+    font-weight: 700;
     cursor: pointer;
-    font-weight: bold;
-    text-decoration: underline;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: text-shadow 0.3s ease, color 0.3s ease;
+}
+
+.sg-switch-text label:hover {
+    color: var(--off-white);
+    text-shadow: 0 0 10px var(--crimson-light);
+}
+
+.btn-submit-full:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(168, 32, 53, 0.5) !important;
+    filter: brightness(1.2);
+}
+
+/* Fix responsive layout if screen is too short/narrow */
+@media (max-height: 700px), (max-width: 480px) {
+    .sg-card-wrapper {
+        margin-top: 1rem;
+        height: 550px;
+        width: 95%;
+    }
+    .sg-flip-front, .sg-flip-back {
+        padding: 2rem;
+    }
+    .sg-scroll-form {
+        max-height: 300px;
+    }
+    .sg-nav-login {
+        position: relative;
+        top: 0;
+        margin-bottom: 2rem;
+    }
+    body.sg-login-page {
+        justify-content: flex-start;
+        padding-top: 1rem;
+    }
 }

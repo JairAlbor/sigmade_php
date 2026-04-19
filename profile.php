@@ -5,12 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/png" href="css/logoSigmade.png">
     <title>Perfil</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/navBar.css">
-    <link rel="stylesheet" href="css/profile.css">
+    <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="css/navBar.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="css/profile.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="js/theme.js?v=<?php echo time(); ?>"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   </head>
-  <body>
+  <body class="sg">
     <?php 
     include("CRUD/conexion.php");
         //iniciación de sesión
@@ -48,14 +51,13 @@ $prestamos_activos = mysqli_fetch_assoc($res_activos)['activos'];
       <div class="logo"><img src="css/logoSigmade.png" alt="Logo SIGMADE" width="100px" height="90px"></div>
 
       <ul class="nav-menu">
-        <?php 
-        if ($_SESSION['rol'] == 'Admin' || $_SESSION['rol'] == 'Operador') {
-            echo '<li class="nav-item" onclick="window.location.href=\'administacion.php\'">Inicio</li>';
-        }else{
-            echo '<li class="nav-item" onclick="window.location.href=\'Dashboard.php\'">Inicio</li>';
-        }
-        ?>
-        <li class="nav-item" onclick="window.location.href='catalogo.php'">Catalogo</li>
+        <li class="nav-item" onclick="window.location.href='index.php'">Inicio</li>
+        <?php if ($_SESSION['rol'] == 'Admin' || $_SESSION['rol'] == 'Operador'): ?>
+            <li class="nav-item" onclick="window.location.href='administacion.php'">Administración</li>
+        <?php else: ?>
+            <li class="nav-item" onclick="window.location.href='Dashboard.php'">Préstamo</li>
+        <?php endif; ?>
+        <li class="nav-item" onclick="window.location.href='catalogo.php'">Catálogo</li>
         <li class="nav-item active">Perfil</li>
       </ul>
 
@@ -66,15 +68,16 @@ $prestamos_activos = mysqli_fetch_assoc($res_activos)['activos'];
         </div>
 
         <div class="user-pill">
-          <div class="user-avatar">
-            <i data-lucide="user" class="icon-user"></i>
-          </div>
-          <span id="userName" class="user-name">Hola, <?php echo $_SESSION['usuario_nombre']; ?></span>
+        <div class="user-avatar">
+          <i data-lucide="user" class="icon-user"></i>
         </div>
-        <a href="extras/logout.php" class="btn-logout" title="Cerrar Sesión">
-          <i data-lucide="log-out" class="icon-logout"></i>
-        </a>
+        <span class="user-name">Hola, <?php echo $_SESSION['usuario_nombre']; ?></span>
       </div>
+      <a href="extras/logout.php" class="btn-logout" title="Cerrar Sesión">
+        <i data-lucide="log-out" class="icon-logout"></i>
+      </a>
+      <button class="theme-toggle-btn" title="Alternar Tema"><i data-lucide="sun"></i></button>
+    </div>
     </nav>
 
     <section class="form-container">
@@ -90,7 +93,9 @@ $prestamos_activos = mysqli_fetch_assoc($res_activos)['activos'];
               <div class="profile-header-info">
                 <h2><?php echo $nombre; ?> <?php echo $apellidos; ?></h2>
                 <p>Miembro desde <?php echo $creado_en; ?></p>
-                <button class="btn-edit">Editar Perfil</button>
+                <button class="btn-edit" onclick="document.getElementById('modalEditarPerfil').classList.remove('hidden'); document.getElementById('modalEditarPerfil').style.display='flex';">
+                  <i class="fa-solid fa-pen-to-square" style="margin-right:6px;"></i>Editar Perfil
+                </button>
               </div>
             </div>
 
@@ -171,26 +176,32 @@ $prestamos_activos = mysqli_fetch_assoc($res_activos)['activos'];
                     $materiales = htmlspecialchars($prestamo['materiales']);
                     
                     // Definir color estilo pill
-                    $bg_color = '#f3f4f6';
-                    $text_color = '#4b5563';
+                    // Definir color estilo pill modo oscuro premium
+                    $bg_color = 'rgba(var(--bg-primary-rgb), 0.8)';
+                    $text_color = 'rgba(var(--text-primary-rgb), 0.8)';
+                    $border_color = 'rgba(var(--text-primary-rgb), 0.2)';
+                    
                     if (in_array($estado, ['Activo', 'Prestado', 'Aprobado'])) {
-                        $bg_color = '#e0e7ff';
-                        $text_color = '#4f46e5';
+                        $bg_color = 'rgba(59, 130, 246, 0.15)'; // Azul translúcido
+                        $text_color = '#60a5fa';
+                        $border_color = 'rgba(59, 130, 246, 0.3)';
                     } elseif (in_array($estado, ['Entregado', 'Finalizado', 'Devuelto'])) {
-                        $bg_color = '#dcfce7';
-                        $text_color = '#16a34a';
+                        $bg_color = 'rgba(16, 185, 129, 0.15)'; // Verde translúcido
+                        $text_color = '#34d399';
+                        $border_color = 'rgba(16, 185, 129, 0.3)';
                     } elseif ($estado == 'Pendiente') {
-                        $bg_color = '#fef3c7';
-                        $text_color = '#d97706';
+                        $bg_color = 'rgba(139, 92, 246, 0.15)'; // Morado translúcido
+                        $text_color = '#a78bfa';
+                        $border_color = 'rgba(139, 92, 246, 0.3)';
                     }
 
-                    echo '<div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background-color: #f9fafb; border-radius: 0.5rem; border: 1px solid #e5e7eb;">';
-                    echo '  <div style="display: flex; flex-direction: column; gap: 0.25rem;">';
-                    echo '    <strong style="color: #1f2937; font-size: 1rem;">' . $materiales . '</strong>';
-                    echo '    <span style="color: #6b7280; font-size: 0.85rem;"><i data-lucide="calendar" style="width: 14px; height: 14px; margin-right: 4px; vertical-align: text-bottom;"></i> ' . $fecha . '</span>';
+                    echo '<div style="display: flex; justify-content: space-between; align-items: center; padding: 1.2rem; background: rgba(var(--bg-primary-rgb), 0.5); border-radius: 0.8rem; border: 1px solid rgba(139, 26, 43, 0.2); transition: all 0.3s ease;" onmouseover="this.style.borderColor=\'var(--crimson-light)\'; this.style.transform=\'translateX(5px)\';" onmouseout="this.style.borderColor=\'rgba(139, 26, 43, 0.2)\'; this.style.transform=\'none\';">';
+                    echo '  <div style="display: flex; flex-direction: column; gap: 0.4rem;">';
+                    echo '    <strong style="color: var(--off-white); font-size: 1.1rem; letter-spacing: 0.5px;">' . $materiales . '</strong>';
+                    echo '    <span style="color: rgba(var(--text-primary-rgb), 0.6); font-size: 0.85rem;"><i data-lucide="calendar" style="width: 14px; height: 14px; margin-right: 4px; vertical-align: text-bottom; color: var(--crimson-light);"></i> ' . $fecha . '</span>';
                     echo '  </div>';
                     echo '  <div>';
-                    echo '    <span style="background-color: ' . $bg_color . '; color: ' . $text_color . '; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.85rem; font-weight: 500;">' . $estado . '</span>';
+                    echo '    <span style="background: ' . $bg_color . '; color: ' . $text_color . '; border: 1px solid ' . $border_color . '; padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase;">' . $estado . '</span>';
                     echo '  </div>';
                     echo '</div>';
                 }
@@ -203,8 +214,82 @@ $prestamos_activos = mysqli_fetch_assoc($res_activos)['activos'];
         </section>
       </main>
     </section>
+
+  <!-- MODAL EDITAR PERFIL -->
+  <div id="modalEditarPerfil" class="modal-overlay hidden">
+    <div class="modal-content" style="max-width:540px; width:95%;">
+      <header class="modal-header">
+        <h2><i class="fa-solid fa-user-pen"></i> Editar Mi Perfil</h2>
+        <button class="close-modal-btn" onclick="document.getElementById('modalEditarPerfil').classList.add('hidden'); document.getElementById('modalEditarPerfil').style.display='none';">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </header>
+      <div class="modal-body">
+        <form id="formEditarPerfil" class="form-diseno">
+
+          <fieldset class="profile-form-section">
+            <legend>Información Personal</legend>
+
+            <div class="form-group">
+              <label><i class="fa-solid fa-user"></i> Nombre(s)</label>
+              <input type="text" id="ep_nombre" name="nombre" value="<?php echo htmlspecialchars($nombre); ?>" required>
+            </div>
+
+            <div class="form-group">
+              <label><i class="fa-solid fa-user"></i> Apellidos</label>
+              <input type="text" id="ep_apellidos" name="apellidos" value="<?php echo htmlspecialchars($apellidos); ?>" required>
+            </div>
+          </fieldset>
+
+          <fieldset class="profile-form-section">
+            <legend>Contacto</legend>
+
+            <div class="form-group">
+              <label><i class="fa-solid fa-envelope"></i> Correo Electrónico</label>
+              <input type="email" id="ep_email" name="email" value="<?php echo htmlspecialchars($email); ?>" required>
+            </div>
+
+            <div class="form-group">
+              <label><i class="fa-solid fa-phone"></i> Teléfono</label>
+              <input type="tel" id="ep_telefono" name="telefono" value="<?php echo htmlspecialchars($telefono); ?>" pattern="[0-9]{10}">
+            </div>
+          </fieldset>
+
+          <div class="form-actions">
+            <button type="button" class="btn-secondary" onclick="document.getElementById('modalEditarPerfil').classList.add('hidden'); document.getElementById('modalEditarPerfil').style.display='none';">
+              <i class="fa-solid fa-xmark"></i> Cancelar
+            </button>
+            <button type="submit" class="btn-guinda">
+              <i class="fa-solid fa-check"></i> Guardar Cambios
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
     <script>
       lucide.createIcons();
+
+      // Manejar submit del form de editar perfil
+      document.getElementById('formEditarPerfil').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const data = new URLSearchParams(new FormData(this));
+        fetch('CRUD/actualizarPerfil.php', {
+          method: 'POST',
+          body: data
+        })
+        .then(r => r.json())
+        .then(res => {
+          if (res.success) {
+            Swal.fire({ icon: 'success', title: '¡Guardado!', text: 'Tu perfil ha sido actualizado.', confirmButtonColor: '#8B1A2B' })
+              .then(() => location.reload());
+          } else {
+            Swal.fire({ icon: 'error', title: 'Error', text: res.message || 'No se pudo actualizar', confirmButtonColor: '#8B1A2B' });
+          }
+        })
+        .catch(() => Swal.fire({ icon: 'error', title: 'Error de red', confirmButtonColor: '#8B1A2B' }));
+      });
     </script>
   </body>
 </html>

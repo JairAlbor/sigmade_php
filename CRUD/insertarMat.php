@@ -8,11 +8,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $disciplina = mysqli_real_escape_string($conn, $_POST['disciplina']);
     $estado = mysqli_real_escape_string($conn, $_POST['estado']);
     $tipoMaterial = mysqli_real_escape_string($conn, $_POST['tipoMaterial']);
+    $cantidad = isset($_POST['cantidad']) ? (int)$_POST['cantidad'] : 1;
+    $descripcion = isset($_POST['descripcion']) ? mysqli_real_escape_string($conn, $_POST['descripcion']) : '';
     $disponibilidad = 'Libre'; // Por defecto, el nuevo material estará disponible
 
     //validamos que los datos no estén vacíos
-    if (empty($nombre) || empty($disciplina) || empty($estado) || empty($tipoMaterial)) {
-        echo "<script>alert('Por favor, completa todos los campos.');</script>";
+    if (empty($nombre) || empty($disciplina) || empty($estado) || empty($tipoMaterial) || $cantidad < 1) {
+        echo "<script>alert('Por favor, completa todos los campos correctamente.');</script>";
         header("Location: ../catalogo.php?error=1");
         exit();
     }
@@ -34,11 +36,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 
-    $sql = "INSERT INTO material (nombre, disciplina_id, tipoMaterial, estado, disponible, foto_url) VALUES ('$nombre', '$disciplina', '$tipoMaterial', '$estado', '$disponibilidad', $foto_url_sql)";
+    $inserciones_exitosas = 0;
+    for ($i = 0; $i < $cantidad; $i++) {
+        $sql = "INSERT INTO material (nombre, disciplina_id, tipoMaterial, estado, disponible, foto_url, descripcion) VALUES ('$nombre', '$disciplina', '$tipoMaterial', '$estado', '$disponibilidad', $foto_url_sql, '$descripcion')";
+        if (mysqli_query($conn, $sql)) {
+            $inserciones_exitosas++;
+        }
+    }
 
-    if (mysqli_query($conn, $sql)) {
-        // Redirigimos y pasamos "success=1" como señal
-        echo "<script>alert('Material agregado correctamente.');</script>";
+    if ($inserciones_exitosas > 0) {
+        echo "<script>alert('Se agregaron $inserciones_exitosas materiales correctamente.');</script>";
         header("Location: ../catalogo.php?success=1");
         exit();
     } else {

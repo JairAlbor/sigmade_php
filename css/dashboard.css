@@ -1,90 +1,151 @@
-.dashboard-container {
-  max-width: 1200px;
-  width: 95%;
-  margin: 0 auto;
-  padding: 2rem 1rem;
-  flex: 1;
+/* Panel Dashboard (Vista de Estudiante) */
 
+.dashboard-container {
+    max-width: 1200px;
+    width: 95%;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    flex: 1;
 }
 
 .dashboard-title {
-  font-size: 2rem;
-  font-weight: 600;
-  color: #ffffff;
-  margin-bottom: 1.5rem;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3rem;
+    font-weight: 500;
+    color: var(--off-white);
+    margin-bottom: 2rem;
+    text-shadow: 0 0 15px rgba(168, 32, 53, 0.4);
+    letter-spacing: 2px;
 }
+[data-theme="light"] .dashboard-title { color: rgb(var(--text-primary-rgb)); text-shadow: none; }
 
 .dashboard-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
 }
 
 /* Tarjeta Grande de Adeudos */
 .adeudos-card {
-  background-color: rgb(0, 164, 151);
-  border-radius: 1.5rem;
-  padding: 2.5rem;
-  color: white;
-  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 350px;
+    background: linear-gradient(135deg, rgba(var(--bg-primary-rgb), 0.8) 0%, rgba(var(--bg-secondary-rgb), 0.9) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(139, 26, 43, 0.3);
+    border-radius: 1.5rem;
+    padding: 3rem;
+    color: var(--off-white);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 0 50px rgba(139, 26, 43, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 350px;
+    position: relative;
+    overflow: hidden;
 }
+.adeudos-card::before {
+    content: '';
+    position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(circle at center, rgba(168, 32, 53, 0.1) 0%, transparent 60%);
+    animation: pulseGlow 6s infinite alternate;
+}
+[data-theme="light"] .adeudos-card {
+    background: linear-gradient(135deg, rgba(var(--bg-secondary-rgb), 0.97) 0%, rgba(var(--bg-tertiary-rgb), 0.95) 100%);
+    border-color: rgba(139, 26, 43, 0.15);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    color: rgb(var(--text-primary-rgb));
+}
+[data-theme="light"] .adeudos-card::before { background: none; }
 
 .check-icon {
-  width: 4.5rem;
-  height: 4.5rem;
-  font-size: 4.5rem;
-  /* Fix for FontAwesome */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 1.2rem;
+    width: 5rem; height: 5rem; font-size: 4rem;
+    color: var(--crimson-light) !important;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 1.5rem;
+    filter: drop-shadow(0 0 15px rgba(168, 32, 53, 0.6));
+    z-index: 1;
 }
-
-.adeudos-title {
-  font-size: 1.6rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
+.adeudos-title { font-size: 2rem; font-weight: 600; margin-bottom: 0.5rem; z-index: 1; }
+.adeudos-subtext { color: rgba(var(--text-primary-rgb), 0.6); font-size: 1.1rem; z-index: 1; }
+[data-theme="light"] .adeudos-title { color: rgb(var(--text-primary-rgb)); }
 
 /* Grid de Botones */
 .cards-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
 }
 
 .dashboard-card {
-  background-color: white;
-  border-radius: 1rem;
-  padding: 1.5rem;
-  border: 1px solid #f3f4f6;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.8rem;
-  transition: all 0.3s ease;
-  cursor: pointer;
+    background: rgba(var(--bg-secondary-rgb), 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 1rem;
+    padding: 2rem 1.5rem;
+    border: 1px solid rgba(139, 26, 43, 0.2);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 1rem;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer; text-decoration: none;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
 }
-
 .dashboard-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.6), 0 0 15px rgba(139,26,43,0.3);
+    background: rgba(43, 31, 33, 0.8);
+    border-color: var(--crimson-light);
+}
+[data-theme="light"] .dashboard-card {
+    background: rgba(var(--bg-secondary-rgb), 0.92);
+    border-color: rgba(139, 26, 43, 0.1);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.07);
+}
+[data-theme="light"] .dashboard-card:hover {
+    background: rgba(var(--bg-tertiary-rgb), 0.97);
+    border-color: var(--crimson);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.12), 0 0 10px rgba(139,26,43,0.12);
+    transform: translateY(-6px) scale(1.01);
 }
 
-.icon-svg {
-  width: 2.2rem;
-  height: 2.2rem;
-  color: #374151;
+.card-icon {
+    background: rgba(var(--bg-primary-rgb), 0.6);
+    padding: 1.2rem; border-radius: 50%;
+    border: 1px solid rgba(139, 26, 43, 0.3);
+    transition: all 0.3s ease;
+}
+.dashboard-card:hover .card-icon {
+    background: linear-gradient(135deg, var(--crimson-dark), var(--crimson));
+    border-color: var(--crimson-light);
+    box-shadow: 0 0 15px rgba(168, 32, 53, 0.5);
+}
+[data-theme="light"] .card-icon {
+    background: rgba(var(--bg-tertiary-rgb), 0.7);
+    border-color: rgba(139,26,43,0.15);
+}
+[data-theme="light"] .dashboard-card:hover .card-icon {
+    background: linear-gradient(135deg, var(--crimson-dark), var(--crimson));
 }
 
-.form-group input {
-  width: 35%;
-  margin-right: 5px;
+.icon-svg { width: 2.5rem; height: 2.5rem; color: var(--off-white); transition: color 0.3s; }
+.dashboard-card:hover .icon-svg { color: #fff; filter: drop-shadow(0 0 5px rgba(255,255,255,0.8)); }
+[data-theme="light"] .icon-svg { color: rgba(var(--text-primary-rgb), 0.8); }
+[data-theme="light"] .dashboard-card:hover .icon-svg { color: #fff; }
+
+.card-title {
+    color: var(--off-white);
+    font-size: 1.2rem; font-weight: 600; letter-spacing: 1px;
+}
+[data-theme="light"] .card-title { color: rgb(var(--text-primary-rgb)); }
+[data-theme="light"] .dashboard-card:hover .card-title { color: rgb(var(--text-primary-rgb)); }
+
+/* Modal de préstamo y reserva — lista de materiales */
+.lista-materiales-check {
+    background: rgba(var(--bg-primary-rgb), 0.5);
+    border: 1px solid rgba(var(--text-primary-rgb), 0.1) !important;
+    border-radius: 10px;
+    padding: 10px !important;
+}
+[data-theme="light"] .lista-materiales-check {
+    background: rgba(var(--bg-secondary-rgb), 0.97);
+    border-color: rgba(var(--text-primary-rgb), 0.15) !important;
 }

@@ -4,16 +4,18 @@ include('conexion.php');
 
 $usuario_id = $_POST['usuario_id'];
 $materiales = $_POST['materiales'];
+$fecha_inicio = $_POST['fecha_inicio'];
 $fecha_limite = $_POST['fecha_limite'];
 
 // Validar datos
-if (!$usuario_id || empty($materiales) || !$fecha_limite) {
+if (!$usuario_id || empty($materiales) || !$fecha_inicio || !$fecha_limite) {
     echo json_encode(['success' => false, 'message' => 'Datos incompletos']);
     exit;
 }
 
 // Sanitizar entradas
 $usuario_id = mysqli_real_escape_string($conn, $usuario_id);
+$fecha_inicio = mysqli_real_escape_string($conn, $fecha_inicio);
 $fecha_limite = mysqli_real_escape_string($conn, $fecha_limite);
 
 // Verificar si el usuario ya tiene un préstamo activo
@@ -23,12 +25,27 @@ if (mysqli_num_rows($check_active) > 0) {
     exit;
 }
 
-// Verificar que todos los materiales estén disponibles antes de insertar
+// Verificar choques de fecha/hora para cada material
 foreach ($materiales as $material_id) {
     $mid = mysqli_real_escape_string($conn, $material_id);
-    $check = mysqli_query($conn, "SELECT id FROM material WHERE id = $mid AND LOWER(disponible) = 'libre'");
-    if (mysqli_num_rows($check) === 0) {
-        echo json_encode(['success' => false, 'message' => "El material #$mid ya no está disponible"]);
+    
+    // Primero validamos si el material tiene estado físico funcional
+    $check_fisico = mysqli_query($conn, "SELECT id, nombre, estado FROM material WHERE id = $mid AND estado != 'Roto' AND estado != 'Mantenimiento'");
+    if (mysqli_num_rows($check_fisico) === 0) {
+        echo json_encode(['success' => false, 'message' => "El material #$mid no se encuentra en condiciones óptimas para préstamo"]);
+        exit;
+    }
+    $mat_info = mysqli_fetch_assoc($check_fisico);
+    
+    // Ahora validamos si hay un préstamo cruzado
+    $query_choque = "SELECT p.id FROM prestamo p 
+                     JOIN detalle_prestamo dp ON p.id = dp.prestamo_id 
+                     WHERE dp.material_id = $mid 
+                     AND p.estado_general IN ('Activo', 'Prestado', 'Pendiente', 'Aprobado')
+                     AND ('$fecha_inicio' < p.fecha_limite AND '$fecha_limite' > p.fecha_inicio)";
+    $check_choque = mysqli_query($conn, $query_choque);
+    if (mysqli_num_rows($check_choque) > 0) {
+        echo json_encode(['success' => false, 'message' => "El material '" . $mat_info['nombre'] . "' ya tiene una reserva que choca con la fecha y hora seleccionadas."]);
         exit;
     }
 }
@@ -36,9 +53,9 @@ foreach ($materiales as $material_id) {
 // Iniciar transacción explícita
 mysqli_autocommit($conn, false);
 
-// Insertar préstamo principal
-$sql = "INSERT INTO prestamo (usuario_id, fecha_solicitud, fecha_limite, estado_general) 
-        VALUES ($usuario_id, CURDATE(), '$fecha_limite', 'Pendiente')";
+// Insertar préstamo principal con fecha de inicio
+$sql = "INSERT INTO prestamo (usuario_id, fecha_solicitud, fecha_inicio, fecha_limite, estado_general) 
+        VALUES ($usuario_id, CURDATE(), '$fecha_inicio', '$fecha_limite', 'Pendiente')";
 
 if (mysqli_query($conn, $sql)) {
     $prestamo_id = mysqli_insert_id($conn);

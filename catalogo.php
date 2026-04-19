@@ -6,48 +6,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/png" href="css/logoSigmade.png">
     <title>Catálogo de Material</title>
-    <link rel="stylesheet" href="css/navBar.css" />
-    <link rel="stylesheet" href="css/style.css" />
-    <link rel="stylesheet" href="css/cssdisenCat.css"/>
+    <link rel="stylesheet" href="css/navBar.css?v=<?php echo time(); ?>" />
+    <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>" />
+    <link rel="stylesheet" href="css/cssdisenCat.css?v=<?php echo time(); ?>"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="js/theme.js?v=<?php echo time(); ?>"></script>
 </head>
 
-<body>
+<body class="sg">
     <?php 
     session_start(); 
-    if (!isset($_SESSION['usuario_nombre'])) {
-        header("Location: login.php");
-        exit();
-    }
-    
     include("CRUD/conexion.php");
     ?>
+    
 
     <nav class="navbar">
         <div class="logo"><img src="css/logoSigmade.png" alt="Logo SIGMADE" width="100px" height="90px"></div>
         <ul class="nav-menu">
-            <?php if ($_SESSION['rol'] == 'Admin' || $_SESSION['rol'] == 'Operador') { ?>
-                <li class="nav-item" onclick="window.location.href = 'administacion.php'">Inicio</li>
-            <?php } else { ?>
-                <li class="nav-item" onclick="window.location.href = 'Dashboard.php'">Inicio</li>
-            <?php } ?>
-            <li class="nav-item active">Catalogo</li>
-            <li class="nav-item" onclick="window.location.href = 'profile.php'">Perfil</li>
+            <li class="nav-item" onclick="window.location.href = 'index.php'">Inicio</li>
+            
+            <?php if (isset($_SESSION['rol'])): ?>
+                <?php if ($_SESSION['rol'] == 'Admin' || $_SESSION['rol'] == 'Operador'): ?>
+                    <li class="nav-item" onclick="window.location.href = 'administacion.php'">Administración</li>
+                <?php else: ?>
+                    <li class="nav-item" onclick="window.location.href = 'Dashboard.php'">Préstamo</li>
+                <?php endif; ?>
+            <?php endif; ?>
+            
+            <li class="nav-item active">Catálogo</li>
+            
+            <?php if (isset($_SESSION['rol'])): ?>
+                <li class="nav-item" onclick="window.location.href = 'profile.php'">Perfil</li>
+            <?php endif; ?>
         </ul>
+
+        <!-- Right Side: User Menu / Login -->
         <div class="top-bar-user">
+            <?php if (isset($_SESSION['usuario_nombre'])) { ?>
             <div class="notification-wrapper">
                 <i data-lucide="bell" class="icon-bell"></i>
                 <span class="notification-dot"></span>
             </div>
+            <!-- Pill de usuario -->
             <div class="user-pill">
                 <div class="user-avatar">
                     <i data-lucide="user" class="icon-user"></i>
                 </div>
-                <span id="userName" class="user-name">Hola, <?php echo isset($_SESSION['usuario_nombre']) ? $_SESSION['usuario_nombre'] : 'Usuario'; ?></span>
+                <span id="userName" class="user-name">Hola, <?php echo $_SESSION['usuario_nombre']; ?></span>
             </div>
             <a href="extras/logout.php" class="btn-logout" title="Cerrar Sesión">
                 <i data-lucide="log-out" class="icon-logout"></i>
             </a>
+            <button class="theme-toggle-btn" title="Alternar Tema"><i data-lucide="sun"></i></button>
+            <?php } else { ?>
+            <button class="sg-btn-p" onclick="window.location.href='login.php'" style="background: linear-gradient(135deg, var(--crimson) 0%, var(--crimson-light) 100%); color: var(--off-white); border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; text-transform: uppercase; font-size:12px; letter-spacing:1px; white-space:nowrap;">Iniciar Sesión</button>
+            <button class="theme-toggle-btn" title="Alternar Tema"><i data-lucide="sun"></i></button>
+            <?php } ?>
         </div>
     </nav>
 
@@ -97,8 +112,12 @@
                         <option value="Material deportivo">Material deportivo</option>
                         <option value="Cancha">Cancha</option>
                     </select>
+                    
+                    <input type="number" name="cantidad" id="cantidad" placeholder="Cantidad" min="1" value="1" required />
+                    
+                    <textarea name="descripcion" id="descripcion" placeholder="Descripción del material" rows="2" style="grid-column: 1 / -1; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; resize: vertical;" required></textarea>
 
-                    <div class="file-input-wrapper">
+                    <div class="file-input-wrapper" style="grid-column: 1 / -1;">
                         <label for="imagen"><i class="fa-solid fa-image"></i> Imagen del artículo</label>
                         <input type="file" id="imagen" name="imagen" accept="image/*" />
                     </div>
@@ -179,15 +198,15 @@
                     </div>
                 </div>
                 
-                <!-- FILTROS RÁPIDOS (AGREGADOS) -->
+                <!-- FILTROS RÁPIDOS -->
                 <div class="filtros-rapidos">
                     <select id="filtroDisponibilidad" class="filtro-select">
-                        <option value="todos"> Todos los materiales</option>
+                        <option value="todos"><i class="fa-solid fa-layer-group"></i> Todos los materiales</option>
                         <option value="Libre"> Disponibles (Libres)</option>
                         <option value="Reservado"> Reservados</option>
                         <option value="Ocupado"> Ocupados</option>
                     </select>
-                    
+
                     <select id="filtroEstado" class="filtro-select">
                         <option value="todos"> Todos los estados</option>
                         <option value="Nuevo"> Nuevo</option>
@@ -196,13 +215,24 @@
                         <option value="Muy-desgastado"> Muy desgastado</option>
                         <option value="Roto"> Roto</option>
                     </select>
-                    
+
+                    <!-- FILTRO POR DISCIPLINA (NUEVO) -->
+                    <select id="filtroDisciplina" class="filtro-select">
+                        <option value="todos">Todas las disciplinas</option>
+                        <?php
+                        $qDis = mysqli_query($conn, "SELECT id, nombre FROM disciplina ORDER BY nombre");
+                        while ($d = mysqli_fetch_assoc($qDis)) {
+                            echo '<option value="' . htmlspecialchars($d['nombre']) . '">' . htmlspecialchars($d['nombre']) . '</option>';
+                        }
+                        ?>
+                    </select>
+
                     <button class="btn-limpiar-filtros" onclick="limpiarFiltrosCatalogo()">
                         <i class="fa-solid fa-eraser"></i> Limpiar
                     </button>
                 </div>
-                
-                <?php if ($_SESSION['rol'] == 'Admin' || $_SESSION['rol'] == 'Operador') { ?>
+
+                <?php if (isset($_SESSION['rol']) && ($_SESSION['rol'] == 'Admin' || $_SESSION['rol'] == 'Operador')) { ?>
                     <button id="btn-abrir-formulario" class="btn-principal">
                         <i class="fa-solid fa-plus"></i> Agregar Material
                     </button>
@@ -263,49 +293,67 @@
             <!-- CONTENEDOR DE BADGES DE FILTROS ACTIVOS -->
             <div class="filtros-activos-badge"></div>
 
-            <!-- TABLA -->
             <div class="table-responsive">
-                <table class="material-table" id="tablaMateriales">
+                <table class="custom-table" id="tablaMateriales">
                     <thead>
                         <tr>
-                            <th style="text-align: center;">Imagen</th>
-                            <th>Artículo</th>
-                            <th>Categoría</th>
-                            <th>Tipo Material</th>
-                            <th>Estado</th>
-                            <th>Disponible</th>
-                            <?php if ($_SESSION['rol'] == 'Admin' || $_SESSION['rol'] == 'Operador') { ?>
-                                <th>Acciones</th>
+                            <th style="text-align: center; width:90px;"><i class="fa-solid fa-image"></i> Imagen</th>
+                            <th><i class="fa-solid fa-barcode"></i> Código</th>
+                            <th><i class="fa-solid fa-box"></i> Artículo</th>
+                            <th><i class="fa-solid fa-tag"></i> Categoría</th>
+                            <th><i class="fa-solid fa-layer-group"></i> Tipo</th>
+                            <th><i class="fa-solid fa-align-left"></i> Descripción</th>
+                            <th><i class="fa-solid fa-circle-check"></i> Estado</th>
+                            <th><i class="fa-solid fa-circle-dot"></i> Disponible</th>
+                            <?php if (isset($_SESSION['rol']) && ($_SESSION['rol'] == 'Admin' || $_SESSION['rol'] == 'Operador')) { ?>
+                                <th><i class="fa-solid fa-gears"></i> Acciones</th>
                             <?php } ?>
                         </tr>
                     </thead>
                     <tbody id="tabla-cuerpo">
                         <?php
+                        /**
+                         * Genera un código legible para el material:
+                         * Formato: [DIS]-[NOM]-[ID]
+                         * Ejemplo: FUT-BAL-00003 (Fútbol, Balón, ID 3)
+                         */
+                        function generarCodigoMaterial($disciplina, $nombre, $id) {
+                            $disPart = strtoupper(substr(preg_replace('/[^a-zA-Z]/', '', $disciplina), 0, 3));
+                            $nomPart = strtoupper(substr(preg_replace('/[^a-zA-Z]/', '', $nombre), 0, 3));
+                            $idPart  = str_pad($id, 5, '0', STR_PAD_LEFT);
+                            if (empty($disPart)) $disPart = 'GEN';
+                            if (empty($nomPart)) $nomPart = 'MAT';
+                            return "$disPart-$nomPart-$idPart";
+                        }
+
                         $consulta = 'SELECT m.id, m.nombre AS nombre_material, d.nombre AS nombre_disciplina, 
-                                    m.disciplina_id, m.tipoMaterial, m.estado, m.disponible, m.foto_url 
+                                    m.disciplina_id, m.tipoMaterial, m.estado, m.disponible, m.foto_url, m.descripcion
                                     FROM material m 
-                                    JOIN disciplina d ON m.disciplina_id = d.id';
+                                    LEFT JOIN disciplina d ON m.disciplina_id = d.id
+                                    ORDER BY d.nombre, m.nombre';
                         $resultado = mysqli_query($conn, $consulta);
 
                         if ($resultado && mysqli_num_rows($resultado) > 0) {
                             while ($fila = mysqli_fetch_assoc($resultado)) {
                                 $claseDisponible = $fila['disponible'] == 'Libre' ? 'disponible-libre' : 'disponible-no-libre';
                                 $claseEstado = strtolower(str_replace(' ', '-', $fila['estado']));
-                                
                                 $fotoUrl = !empty($fila['foto_url']) ? $fila['foto_url'] : 'css/logoSigmade.png';
+                                $codigo = generarCodigoMaterial($fila['nombre_disciplina'], $fila['nombre_material'], $fila['id']);
                                 
                                 echo "<tr data-nombre='" . htmlspecialchars($fila['nombre_material']) . "' 
                                           data-disciplina='" . htmlspecialchars($fila['nombre_disciplina']) . "'
                                           data-tipo='" . htmlspecialchars($fila['tipoMaterial']) . "'>";
                                           
-                                echo "<td style='text-align:center;'><img src='" . htmlspecialchars($fotoUrl) . "' style='width: 80px; height: 70px; object-fit: cover; border-radius: 8px;' onerror='this.src=\"css/logoSigmade.png\"'></td>";
+                                echo "<td style='text-align:center;'><img src='" . htmlspecialchars($fotoUrl) . "' style='width: 72px; height: 62px; object-fit: cover; border-radius: 8px;' onerror='this.src=\"css/logoSigmade.png\"'></td>";
+                                echo "<td><span style='font-family: monospace; font-size: 0.8rem; background: rgba(139,26,43,0.15); color: var(--crimson-light); padding: 2px 8px; border-radius: 4px; letter-spacing:1px;'>$codigo</span></td>";
                                 echo "<td>" . htmlspecialchars($fila['nombre_material']) . "</td>";
                                 echo "<td>" . htmlspecialchars($fila['nombre_disciplina']) . "</td>";
                                 echo "<td>" . htmlspecialchars($fila['tipoMaterial']) . "</td>";
+                                echo "<td style='max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;' title='" . htmlspecialchars($fila['descripcion']) . "'>" . htmlspecialchars($fila['descripcion'] ? $fila['descripcion'] : 'Sin descripción') . "</td>";
                                 echo "<td><span class='badge-estado $claseEstado'>" . htmlspecialchars($fila['estado']) . "</span></td>";
                                 echo "<td><span class='badge-disponible $claseDisponible'>" . htmlspecialchars($fila['disponible']) . "</span></td>";
 
-                                if ($_SESSION['rol'] == 'Admin' || $_SESSION['rol'] == 'Operador') {
+                                if (isset($_SESSION['rol']) && ($_SESSION['rol'] == 'Admin' || $_SESSION['rol'] == 'Operador')) {
                                     echo '<td class="actions">';
                                     $id = $fila['id'];
                                     $nombre = addslashes(htmlspecialchars($fila['nombre_material'], ENT_QUOTES));
@@ -314,10 +362,10 @@
                                     $tipo = addslashes($fila['tipoMaterial']);
                                     $disp = addslashes($fila['disponible']);
 
-                                    echo "<button class='btn-icon edit' onclick='abrirModalEdicion($id, \"$nombre\", $id_dis, \"$estado\", \"$tipo\", \"$disp\")'>
+                                    echo "<button class='btn-icon edit' title='Editar' onclick='abrirModalEdicion($id, \"$nombre\", $id_dis, \"$estado\", \"$tipo\", \"$disp\")'>
                                             <i class='fa-regular fa-pen-to-square'></i>
                                           </button>";
-                                    echo "<button class='btn-icon delete' onclick='eliminarMaterial($id)'>
+                                    echo "<button class='btn-icon delete' title='Eliminar' onclick='eliminarMaterial($id)'>
                                             <i class='fa-regular fa-trash-can'></i>
                                           </button>";
                                     echo '</td>';
@@ -325,7 +373,8 @@
                                 echo "</tr>";
                             }
                         } else {
-                            echo "<tr><td colspan='7' class='text-center'>No se encontraron materiales.</td></tr>";
+                            $colspan = (isset($_SESSION['rol']) && ($_SESSION['rol'] == 'Admin' || $_SESSION['rol'] == 'Operador')) ? 9 : 8;
+                            echo "<tr><td colspan='$colspan' class='text-center'>No se encontraron materiales.</td></tr>";
                         }
                         ?>
                     </tbody>

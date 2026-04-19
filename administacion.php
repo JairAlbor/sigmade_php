@@ -6,13 +6,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="icon" type="image/png" href="css/logoSigmade.png">
   <title>Dashboard de Administración</title>
-  <link rel="stylesheet" href="css/navBar.css" />
-  <link rel="stylesheet" href="css/style.css" />
-  <link rel="stylesheet" href="css/cssAdmin.css" />
+  <link rel="stylesheet" href="css/navBar.css?v=<?php echo time(); ?>" />
+  <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>" />
+  <link rel="stylesheet" href="css/cssAdmin.css?v=<?php echo time(); ?>" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="js/theme.js?v=<?php echo time(); ?>"></script>
 </head>
 
-<body>
+<body class="sg">
   <?php
   session_start();
   if (!isset($_SESSION['usuario_nombre'])) {
@@ -39,8 +41,9 @@
   <nav class="navbar">
     <div class="logo"><img src="css/logoSigmade.png" alt="Logo SIGMADE" width="100px" height="90px"></div>
     <ul class="nav-menu">
-      <li class="nav-item active">Inicio</li>
-      <li class="nav-item" onclick="window.location.href = 'catalogo.php'">Catalogo</li>
+      <li class="nav-item" onclick="window.location.href = 'index.php'">Inicio</li>
+      <li class="nav-item active">Administración</li>
+      <li class="nav-item" onclick="window.location.href = 'catalogo.php'">Catálogo</li>
       <li class="nav-item" onclick="window.location.href = 'profile.php'">Perfil</li>
     </ul>
     <div class="top-bar-user">
@@ -52,11 +55,12 @@
         <div class="user-avatar">
           <i data-lucide="user" class="icon-user"></i>
         </div>
-        <span id="userName" class="user-name">Hola, <?php echo isset($_SESSION['usuario_nombre']) ? $_SESSION['usuario_nombre'] : 'Usuario'; ?></span>
+        <span class="user-name">Hola, <?php echo $_SESSION['usuario_nombre']; ?></span>
       </div>
       <a href="extras/logout.php" class="btn-logout" title="Cerrar Sesión">
         <i data-lucide="log-out" class="icon-logout"></i>
       </a>
+      <button class="theme-toggle-btn" title="Alternar Tema"><i data-lucide="sun"></i></button>
     </div>
   </nav>
 
@@ -152,10 +156,8 @@
               <i class="fa-solid fa-magnifying-glass"></i>
               <input type="text" id="buscarPrestamo" placeholder="Buscar por usuario, materiales o estado..." oninput="filtrarPrestamos()">
             </div>
-            <!-- Nuevo: Filtro Diario Rápido -->
-            <input type="date" id="filtroRapidoDia" class="filtro-select" style="padding: 8px; border: 1px solid #ccc; border-radius: 5px;" title="Ver solicitudes de un día exacto" onchange="filtrarPrestamos()">
-            <!-- Nuevo: Botón PDF -->
-            <button class="btn-principal" onclick="exportarPrestamosPDF()" style="background-color: #2e7d32; border-radius: 5px;">
+            <input type="date" id="filtroRapidoDia" class="filtro-select" title="Ver solicitudes de un día exacto" onchange="filtrarPrestamos()">
+            <button class="btn-pdf" onclick="exportarPrestamosPDF()">
               <i class="fa-solid fa-file-pdf"></i> PDF
             </button>
           </div>
@@ -218,11 +220,11 @@
         </div>
 
         <!-- Tabs Activos vs Finalizados -->
-        <div class="admin-tabs" style="display:flex; margin-bottom: 10px; gap: 5px;">
-          <button id="tabPrestamosActivos" class="tab-btn active" onclick="cambiarPestañaPrestamos('activos')" style="flex:1; padding: 10px; border:none; background:#7a1030; color:white; border-radius: 5px; cursor: pointer; font-weight: 600;">
+        <div class="admin-tabs">
+          <button id="tabPrestamosActivos" class="tab-btn active" onclick="cambiarPestañaPrestamos('activos')">
             <i class="fa-solid fa-clock"></i> En Curso y Pendientes
           </button>
-          <button id="tabPrestamosFinalizados" class="tab-btn" onclick="cambiarPestañaPrestamos('finalizados')" style="flex:1; padding: 10px; border:1px solid #ccc; background:#eee; color:#333; border-radius: 5px; cursor: pointer; font-weight: 600;">
+          <button id="tabPrestamosFinalizados" class="tab-btn" onclick="cambiarPestañaPrestamos('finalizados')">
             <i class="fa-solid fa-box-archive"></i> Archivo Terminado
           </button>
         </div>
@@ -302,9 +304,15 @@
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="fechaLimite">Fecha Límite *</label>
-          <input type="date" id="fechaLimite" name="fecha_limite" required>
+        <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+          <div class="form-group">
+            <label for="fechaInicio">Fecha y Hora Inicio *</label>
+            <input type="datetime-local" id="fechaInicio" name="fecha_inicio" required>
+          </div>
+          <div class="form-group">
+            <label for="fechaLimite">Fecha y Hora Límite *</label>
+            <input type="datetime-local" id="fechaLimite" name="fecha_limite" required>
+          </div>
         </div>
 
         <div class="form-actions">
@@ -335,17 +343,32 @@
       </header>
       <div class="modal-body">
         <section id="addEventForm" class="add-form-container hidden">
-          <h3>Nuevo Evento</h3>
+          <h3 style="color:var(--off-white); margin-bottom:1rem; font-size:1.1rem;"><i class="fa-solid fa-calendar-plus" style="color:var(--crimson-light);"></i> Nuevo Evento</h3>
           <div class="form-grid">
-            <input type="text" placeholder="Título del evento" id="eventTitle">
-            <input type="text" placeholder="Ubicación" id="eventLocation">
-            <input type="date" id="eventDate">
-            <input type="time" id="eventTime">
+            <div class="form-group">
+              <label><i class="fa-solid fa-heading"></i> Título</label>
+              <input type="text" placeholder="Título del evento" id="eventTitle">
+            </div>
+            <div class="form-group">
+              <label><i class="fa-solid fa-map-pin"></i> Ubicación</label>
+              <input type="text" placeholder="Lugar del evento" id="eventLocation">
+            </div>
+            <div class="form-group">
+              <label><i class="fa-solid fa-calendar"></i> Fecha</label>
+              <input type="date" id="eventDate">
+            </div>
+            <div class="form-group">
+              <label><i class="fa-solid fa-clock"></i> Hora</label>
+              <input type="time" id="eventTime">
+            </div>
           </div>
-          <textarea placeholder="Descripción del evento" rows="3" id="eventDesc"></textarea>
+          <div class="form-group">
+            <label><i class="fa-solid fa-align-left"></i> Descripción</label>
+            <textarea placeholder="Describe el evento..." rows="3" id="eventDesc"></textarea>
+          </div>
           <div class="form-actions">
-            <button class="btn-cancel" onclick="toggleFormEventos()">Cancelar</button>
-            <button class="btn-save" onclick="saveEvent()">Guardar Evento</button>
+            <button class="btn-secondary" onclick="toggleFormEventos()"><i class="fa-solid fa-xmark"></i> Cancelar</button>
+            <button class="btn-guinda" onclick="saveEvent()"><i class="fa-solid fa-check"></i> Guardar Evento</button>
           </div>
         </section>
         <div id="eventList" class="event-list-container"></div>
@@ -378,7 +401,7 @@
             </div>
             <?php if ($_SESSION['rol'] == 'Admin' || $_SESSION['rol'] == 'Operador') { ?>
               <button id="btn-abrir-formulario" class="btn-principal" onclick="mostrarFormularioRegistro()">
-                + Agregar Usuario
+                <i class="fa-solid fa-user-plus"></i> Agregar Usuario
               </button>
             <?php } ?>
           </div>

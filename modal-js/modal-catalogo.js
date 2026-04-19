@@ -1,11 +1,12 @@
 /**
  * ARCHIVO: modal-catalogo.js
- * Versión completa con filtros por disponibilidad, estado y búsqueda
+ * Versión completa con filtros por disponibilidad, estado, disciplina y búsqueda
  */
 
 // Variables globales
 let filtroDisponibilidadActual = 'todos';
 let filtroEstadoActual = 'todos';
+let filtroDisciplinaActual = 'todos';
 let busquedaActual = '';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -64,9 +65,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 7. ACTUALIZAR ESTADÍSTICAS
+    // 7. FILTRO POR DISCIPLINA (NUEVO)
+    const filtroDisciplina = document.getElementById('filtroDisciplina');
+    if (filtroDisciplina) {
+        filtroDisciplina.addEventListener('change', function () {
+            filtroDisciplinaActual = this.value;
+            aplicarFiltrosCompletos();
+            mostrarBadgesFiltros();
+        });
+    }
+
+    // 8. ACTUALIZAR ESTADÍSTICAS
     actualizarEstadisticas();
 });
+
 
 /**
  * Crea un overlay de fondo para los modales
@@ -179,8 +191,9 @@ function aplicarFiltrosCompletos() {
         const coincideBusqueda = textoCompleto.includes(busquedaActual.toLowerCase());
         const coincideDisponibilidad = filtroDisponibilidadActual === 'todos' || disponibilidad === filtroDisponibilidadActual;
         const coincideEstado = filtroEstadoActual === 'todos' || estado === filtroEstadoActual;
+        const coincideDisciplina = filtroDisciplinaActual === 'todos' || disciplina === filtroDisciplinaActual;
 
-        if (coincideBusqueda && coincideDisponibilidad && coincideEstado) {
+        if (coincideBusqueda && coincideDisponibilidad && coincideEstado && coincideDisciplina) {
             fila.style.display = '';
             contadorVisibles++;
         } else {
@@ -196,7 +209,7 @@ function aplicarFiltrosCompletos() {
         const nuevaFila = document.createElement('tr');
         nuevaFila.id = 'fila-no-resultados';
         const primerFila = document.querySelector('#tabla-cuerpo tr:first-child td');
-        const colspan = primerFila ? primerFila.colSpan : 6;
+        const colspan = primerFila ? primerFila.colSpan : 9;
         nuevaFila.innerHTML = `<td colspan='${colspan}' class='text-center'>❌ No se encontraron materiales con los filtros seleccionados</td>`;
         tbody.appendChild(nuevaFila);
     } else if (contadorVisibles > 0 && filaNoResultados) {
@@ -215,15 +228,18 @@ window.limpiarFiltrosCatalogo = function () {
     busquedaActual = '';
     filtroDisponibilidadActual = 'todos';
     filtroEstadoActual = 'todos';
+    filtroDisciplinaActual = 'todos';
 
     // Resetear inputs
     const buscador = document.getElementById('searchMaterial');
     const filtroDisponibilidad = document.getElementById('filtroDisponibilidad');
     const filtroEstado = document.getElementById('filtroEstado');
+    const filtroDisciplina = document.getElementById('filtroDisciplina');
 
     if (buscador) buscador.value = '';
     if (filtroDisponibilidad) filtroDisponibilidad.value = 'todos';
     if (filtroEstado) filtroEstado.value = 'todos';
+    if (filtroDisciplina) filtroDisciplina.value = 'todos';
 
     // Limpiar badges
     const badgesContainer = document.querySelector('.filtros-activos-badge');

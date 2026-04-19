@@ -5,14 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/png" href="css/logoSigmade.png">
     <title>Dashboard</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/navBar.css">
-    <link rel="stylesheet" href="css/dashboard.css">
-    <link rel="stylesheet" href="css/cssAdmin.css">
+    <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="css/navBar.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="css/dashboard.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="css/cssAdmin.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="js/theme.js?v=<?php echo time(); ?>"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   </head>
-  <body>
+  <body class="sg">
     <?php session_start();
     if (!isset($_SESSION['usuario_nombre'])) {
         // Si el usuario no ha iniciado sesión, redirigir al login
@@ -24,8 +26,9 @@
   <div class="logo"><img src="css/logoSigmade.png" alt="SIGMADE" width="100px" height="90px""></div>
 
   <ul class="nav-menu">
-    <li class="nav-item active">Inicio</li>
-    <li class="nav-item" onclick="window.location.href='catalogo.php'">Catalogo</li>
+    <li class="nav-item" onclick="window.location.href='index.php'">Inicio</li>
+    <li class="nav-item active">Préstamo</li>
+    <li class="nav-item" onclick="window.location.href='catalogo.php'">Catálogo</li>
     <li class="nav-item" onclick="window.location.href='profile.php'">Perfil</li>
   </ul>
 
@@ -35,18 +38,17 @@
       <span class="notification-dot"></span>
     </div>
 
-    <div class="user-pill">
-      <div class="user-avatar">
-        <i data-lucide="user" class="icon-user"></i>
+      <div class="user-pill">
+        <div class="user-avatar">
+          <i data-lucide="user" class="icon-user"></i>
+        </div>
+        <span class="user-name">Hola, <?php echo $_SESSION['usuario_nombre']; ?></span>
       </div>
-      <span id="userName" class="user-name">
-        Hola, <?php echo isset($_SESSION['usuario_nombre']) ? $_SESSION['usuario_nombre'] : 'Usuario'; ?>
-      </span>
+      <a href="extras/logout.php" class="btn-logout" title="Cerrar Sesión">
+        <i data-lucide="log-out" class="icon-logout"></i>
+      </a>
+      <button class="theme-toggle-btn" title="Alternar Tema"><i data-lucide="sun"></i></button>
     </div>
-    <a href="extras/logout.php" class="btn-logout" title="Cerrar Sesión">
-      <i data-lucide="log-out" class="icon-logout"></i>
-    </a>
-  </div>
 </nav>
 
    <section class="form-container">
@@ -121,16 +123,40 @@
     </header>
     <div class="modal-body">
       <form id="formPrestamo" class="form-diseno" onsubmit="event.preventDefault(); registrarPrestamo();">
+
+        <!-- BARRA DE BÚSQL NUEVA -->
+        <div class="form-group">
+          <label><i class="fa-solid fa-magnifying-glass"></i> Buscar Material:</label>
+          <div class="search-input-wrapper" style="position:relative;">
+            <i class="fa-solid fa-magnifying-glass" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:rgba(var(--text-primary-rgb),0.4);"></i>
+            <input type="text" id="searchModalMaterial" placeholder="Nombre, disciplina..." 
+              style="width:100%; padding: 10px 10px 10px 38px; border-radius:8px; border:1px solid rgba(var(--text-primary-rgb),0.15); background:rgba(var(--bg-primary-rgb),0.7); color:var(--off-white); font-family:inherit;"
+              oninput="filtrarMaterialesEnModal(this.value)">
+          </div>
+        </div>
+
+        <!-- LISTA DE MATERIALES -->
         <div class="form-group custom-dropdown-group">
-          <label>Materiales Disponibles:</label>
-          <div id="listaMaterialesDisponibles" class="lista-materiales-check drop-version" style="max-height: 150px; overflow-y:auto; border:1px solid #ccc; padding:10px; margin-bottom:10px;">
+          <label><i class="fa-solid fa-boxes-stacked"></i> Materiales Disponibles:</label>
+          <div id="listaMaterialesDisponibles" class="lista-materiales-check drop-version" 
+               style="max-height: 200px; overflow-y:auto; border:1px solid rgba(var(--text-primary-rgb),0.1); 
+                      background:rgba(var(--bg-primary-rgb),0.5); padding:10px; margin-bottom:10px; border-radius:8px;">
             Cargando...
           </div>
         </div>
-        <div class="form-group">
-          <label>Fecha Límite:</label>
-          <input type="datetime-local" id="fechaLimitePrestamo" required>
+
+        <!-- FECHAS -->
+        <div class="form-grid" style="grid-template-columns:1fr 1fr;">
+          <div class="form-group">
+            <label><i class="fa-solid fa-calendar-plus"></i> Fecha y Hora Inicio:</label>
+            <input type="datetime-local" id="fechaInicioPrestamo" required style="color:var(--off-white);">
+          </div>
+          <div class="form-group">
+            <label><i class="fa-solid fa-calendar-xmark"></i> Fecha Límite:</label>
+            <input type="datetime-local" id="fechaLimitePrestamo" required style="color:var(--off-white);">
+          </div>
         </div>
+
         <div class="form-actions-edit">
           <button type="submit" class="btn-guinda"><i class="fa-solid fa-check"></i> Solicitar Préstamo</button>
         </div>

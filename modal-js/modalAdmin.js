@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const usuarioId = document.getElementById('usuarioPrestamo').value;
             const checkboxes = document.querySelectorAll('#listaMateriales input[type="checkbox"]:checked');
             const materialesSeleccionados = Array.from(checkboxes).map(cb => cb.value);
+            const fechaInicio = document.getElementById('fechaInicio')?.value;
             const fechaLimite = document.getElementById('fechaLimite').value;
 
             if (!usuarioId) {
@@ -59,14 +60,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Por favor seleccione al menos un material');
                 return;
             }
+            if (!fechaInicio) {
+                alert('Por favor seleccione una fecha y hora de inicio');
+                return;
+            }
             if (!fechaLimite) {
-                alert('Por favor seleccione una fecha límite');
+                alert('Por favor seleccione una fecha y hora límite');
                 return;
             }
 
             const formData = new FormData();
             formData.append('usuario_id', usuarioId);
             materialesSeleccionados.forEach(m => formData.append('materiales[]', m));
+            formData.append('fecha_inicio', fechaInicio);
             formData.append('fecha_limite', fechaLimite);
 
             fetch('CRUD/registrarPrestamo.php', {
