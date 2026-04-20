@@ -13,6 +13,9 @@
     <!-- theme.js debe ir ANTES del body para evitar destellos de color no deseados -->
     <script src="js/theme.js?v=<?php echo time(); ?>"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Leaflet para Mapas -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 
 <body class="sg">
@@ -61,35 +64,56 @@
     <header class="sg-hero">
         <div class="sg-hero-bg"></div>
         <div class="sg-hero-left">
-            <div class="sg-eyebrow">Plataforma Oficial</div>
-            <h1>Potencia tu <em>Entrenamiento</em></h1>
-            <p>Gestiona, reserva y administra tu material deportivo con precisión. El sistema definitivo para la
-                excelencia deportiva en tu institución.</p>
+            <div class="sg-eyebrow">Sistema SIGMADE</div>
+            <h1>Gestión inteligente de <em>equipamiento deportivo</em></h1>
+            <p>Consulta la disponibilidad, reserva balones, redes o espacios, y gestiona tus préstamos de manera rápida y ordenada.</p>
             <div class="sg-btn-row">
-                <button class="sg-btn-p">Comenzar Ahora</button>
-                <button class="sg-btn-s">Ver Catálogo</button>
+                <?php if (!isset($_SESSION['rol'])): ?>
+                    <button class="sg-btn-p" onclick="window.location.href='login.php'">Iniciar Sesión</button>
+                <?php else: ?>
+                    <button class="sg-btn-p" onclick="window.location.href='Dashboard.php'">Ir al Panel</button>
+                <?php endif; ?>
+                <button class="sg-btn-s" onclick="window.location.href='catalogo.php'">Ver Catálogo</button>
             </div>
         </div>
         <div class="sg-hero-right">
-            <div class="sg-item">
-                <div class="sg-item-icon">🏀</div>
-                <div class="sg-item-info">
-                    <div class="sg-item-name">Basquetbol</div>
-                    <div class="sg-item-sub">Balón / Cancha</div>
+            <div class="sg-hero-info">
+                <!-- Sección Clima -->
+                <div class="sg-info-card weather" id="weather-widget">
+                    <div class="sg-weather-main">
+                        <img id="weather-icon" src="" alt="Clima" width="50">
+                        <span id="temp">--°C</span>
+                    </div>
+                    <div class="sg-weather-details">
+                        <span id="weather-desc">Cargando clima...</span>
+                        <small id="weather-rec">Verificando condiciones...</small>
+                    </div>
+                    <div class="sg-status-dot pulse"></div>
                 </div>
-            </div>
-            <div class="sg-item">
-                <div class="sg-item-icon">⚽</div>
-                <div class="sg-item-info">
-                    <div class="sg-item-name">Fútbol</div>
-                    <div class="sg-item-sub">Balón / Cancha</div>
+
+                <!-- Sección Ubicación y Mapa -->
+                <div class="sg-info-card location">
+                    <div class="sg-location-text">
+                        <div class="sg-info-item">
+                            <i data-lucide="map-pin"></i>
+                            <span>Edificio de Deportes, UTM</span>
+                        </div>
+                        <div class="sg-info-item">
+                            <i data-lucide="clock"></i>
+                            <span>Lun - Vie: 8:00 - 17:00</span>
+                        </div>
+                    </div>
+                    <div id="map-preview" class="sg-map-container"></div>
                 </div>
-            </div>
-            <div class="sg-item">
-                <div class="sg-item-icon">➕</div>
-                <div class="sg-item-info">
-                    <div class="sg-item-name">Y más disciplinas</div>
-                    <div class="sg-item-sub">Voleibol / Ajedrez / Mterial Civico</div>
+
+                <!-- Botones de Contacto -->
+                <div class="sg-info-actions">
+                    <a href="https://wa.me/529511234567?text=Hola,%20tengo%20una%20duda%20sobre%20un%20préstamo%20de%20material" target="_blank" class="sg-btn-info wa">
+                        <i data-lucide="message-circle"></i> WhatsApp
+                    </a>
+                    <a href="mailto:deportes@utm.mx" class="sg-btn-info mail">
+                        <i data-lucide="mail"></i> Correo
+                    </a>
                 </div>
             </div>
         </div>
@@ -97,26 +121,28 @@
 
 
     <section class="sg-section">
-        <div class="sg-stag">Características Principales</div>
+        <div class="sg-stag">¿Qué resolvemos?</div>
         <h2>Diseñado para el <em>Rendimiento</em></h2>
         <div class="sg-cards">
             <div class="sg-card">
-                <div class="sg-card-num">01</div>
-                <h3>Control en Tiempo Real</h3>
-                <p>Verifica la disponibilidad del material al instante. Nuestro sistema te mantiene actualizado sobre el
-                    stock y la ubicación de cada artículo deportivo.</p>
+                <div class="sg-card-icon"><i data-lucide="database"></i></div>
+                <h3>Inventario en Tiempo Real</h3>
+                <p>Sabe exactamente qué está "Libre" y qué está "Ocupado" antes de ir a pedirlo.</p>
             </div>
             <div class="sg-card">
-                <div class="sg-card-num">02</div>
-                <h3>Reservas Anticipadas</h3>
-                <p>Asegura tu material para futuros entrenamientos o torneos con un sistema de reservas fácil de usar,
-                    sin empalmes ni conflictos.</p>
+                <div class="sg-card-icon"><i data-lucide="clipboard-list"></i></div>
+                <h3>Préstamos Ágiles</h3>
+                <p>Olvídate del papeleo; registra solicitudes y devoluciones al instante.</p>
             </div>
             <div class="sg-card">
-                <div class="sg-card-num">03</div>
-                <h3>Historial Completo</h3>
-                <p>Mantén un registro detallado de tus préstamos anteriores. Consulta fechas, artículos y estatus con
-                    total transparencia.</p>
+                <div class="sg-card-icon"><i data-lucide="users"></i></div>
+                <h3>Control de Disciplinas</h3>
+                <p>Organiza torneos, equipos y asigna materiales a cada disciplina de forma eficiente.</p>
+            </div>
+            <div class="sg-card">
+                <div class="sg-card-icon"><i data-lucide="smartphone"></i></div>
+                <h3>Multidispositivo</h3>
+                <p>Diseñado para usarse desde tu celular en cualquier lugar del campus.</p>
             </div>
         </div>
     </section>
@@ -125,74 +151,20 @@
         <div class="sg-stag">Flujo de Trabajo</div>
         <h2>¿Cómo funciona <em>SIGMADE?</em></h2>
         <div class="sg-how">
-            <div class="sg-steps">
-                <div class="sg-step">
-                    <div class="sg-step-num">1</div>
-                    <div class="sg-step-content">
-                        <h4>Selecciona el Material</h4>
-                        <p>Explora nuestro catálogo y elige el equipo que necesitas para tu sesión.</p>
-                    </div>
-                </div>
-                <div class="sg-step">
-                    <div class="sg-step-num">2</div>
-                    <div class="sg-step-content">
-                        <h4>Genera la Solicitud</h4>
-                        <p>Confirma tus datos y selecciona la hora de uso requerida.</p>
-                    </div>
-                </div>
-                <div class="sg-step">
-                    <div class="sg-step-num">3</div>
-                    <div class="sg-step-content">
-                        <h4>Recibe la Aprobación</h4>
-                        <p>El administrador de la instalación validará tu solicitud en minutos.</p>
-                    </div>
-                </div>
-                <div class="sg-step">
-                    <div class="sg-step-num">4</div>
-                    <div class="sg-step-content">
-                        <h4>Recoge y Entrena</h4>
-                        <p>Acude a la zona de almacén, presenta tu matrícula y comienza tu entrenamiento.</p>
-                    </div>
-                </div>
+            <div class="sg-step">
+                <div class="sg-step-num">1</div>
+                <h4>Ingresa</h4>
+                <p>Inicia sesión con tu matrícula y contraseña oficial.</p>
             </div>
-            <div class="sg-panel">
-                <span class="sg-panel-title">Disponibilidad Actual por Disciplina</span>
-                <div class="sg-prow">
-                    <div class="sg-prow-head">
-                        <span>Balones de Basquetbol</span>
-                        <span class="sg-pct">75%</span>
-                    </div>
-                    <div class="sg-pbar">
-                        <div class="sg-pfill" style="width: 75%"></div>
-                    </div>
-                </div>
-                <div class="sg-prow">
-                    <div class="sg-prow-head">
-                        <span>Balones de Fútbol</span>
-                        <span class="sg-pct">85%</span>
-                    </div>
-                    <div class="sg-pbar">
-                        <div class="sg-pfill" style="width: 85%"></div>
-                    </div>
-                </div>
-                <div class="sg-prow">
-                    <div class="sg-prow-head">
-                        <span>Juegos de Ajedrez</span>
-                        <span class="sg-pct">90%</span>
-                    </div>
-                    <div class="sg-pbar">
-                        <div class="sg-pfill" style="width: 90%"></div>
-                    </div>
-                </div>
-                <div class="sg-prow">
-                    <div class="sg-prow-head">
-                        <span>Redes y Balones de Voleibol</span>
-                        <span class="sg-pct">60%</span>
-                    </div>
-                    <div class="sg-pbar">
-                        <div class="sg-pfill" style="width: 60%"></div>
-                    </div>
-                </div>
+            <div class="sg-step">
+                <div class="sg-step-num">2</div>
+                <h4>Explora</h4>
+                <p>Revisa el catálogo dinámico para encontrar el material que necesitas.</p>
+            </div>
+            <div class="sg-step">
+                <div class="sg-step-num">3</div>
+                <h4>Solicita</h4>
+                <p>Acude con el administrador para confirmar tu préstamo y ¡listo!</p>
             </div>
         </div>
     </section>
@@ -217,4 +189,58 @@
     </footer>
 </body>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        lucide.createIcons();
+
+        /* Script de Clima - OpenWeatherMap */
+        const weatherApiKey = '090347162e580d5356d0563cc892cf18';
+        const lat = 17.8267;
+        const lon = -97.8041;
+
+        async function fetchWeather() {
+            try {
+                const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${weatherApiKey}&units=metric&lang=es`);
+                const data = await response.json();
+                
+                if (data.cod === 200) {
+                    document.getElementById('temp').innerText = `${Math.round(data.main.temp)}°C`;
+                    const desc = data.weather[0].description;
+                    document.getElementById('weather-desc').innerText = desc.charAt(0).toUpperCase() + desc.slice(1);
+                    document.getElementById('weather-icon').src = `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
+                    
+                    const condition = data.weather[0].main;
+                    const recText = (condition === 'Clear' || condition === 'Clouds') ? 'Óptimo para deportes exterior' : 'Recomendado interiores';
+                    document.getElementById('weather-rec').innerText = recText;
+                }
+            } catch (error) {
+                console.error('Error al obtener el clima:', error);
+            }
+        }
+
+        /* Script de Mapa - Leaflet */
+        function initMap() {
+            const map = L.map('map-preview', {
+                zoomControl: false,
+                attributionControl: false
+            }).setView([lat, lon], 16);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+            const utmIcon = L.icon({
+                iconUrl: 'css/logoSigmade.png',
+                iconSize: [32, 28],
+                iconAnchor: [16, 14],
+            });
+
+            L.marker([lat, lon], {icon: utmIcon}).addTo(map)
+                .bindPopup('<b>Almacén SIGMADE</b><br>Edificio de Deportes')
+                .openPopup();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchWeather();
+            initMap();
+        });
+    </script>
+
 </html>
