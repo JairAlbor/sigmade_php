@@ -268,26 +268,28 @@ window.cambiarPestañaPrestamos = function (tabName) {
 };
 
 window.cambiarEstadoPrestamo = function (id, nuevoEstado) {
-    if (confirm(`¿Confirmar que desea cambiar el estado a ${nuevoEstado}?`)) {
-        fetch('CRUD/cambiarEstadoPrestamo.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: id, estado: nuevoEstado })
-        })
+    SIGMADE_UI.confirm('¿Cambiar estado?', `¿Confirmar que desea cambiar el estado a ${nuevoEstado}?`, 'Sí, cambiar')
+    .then((result) => {
+        if (result.isConfirmed) {
+            fetch('CRUD/cambiarEstadoPrestamo.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: id, estado: nuevoEstado })
+            })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert(data.message);
-                    cargarPrestamos();
+                    SIGMADE_UI.success('¡Hecho!', data.message, 1500).then(() => cargarPrestamos());
                 } else {
-                    alert('Error: ' + data.message);
+                    SIGMADE_UI.error('Error', data.message);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Error al actualizar estado.');
+                SIGMADE_UI.error('Error al actualizar estado.');
             });
-    }
+        }
+    });
 };
 
 window.mostrarModalFinalizarPrestamo = function (id) {
@@ -308,16 +310,17 @@ window.finalizarPrestamo = function () {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert(data.message);
-                toggleModal('modalFinalizarPrestamo');
-                cargarPrestamos();
+                SIGMADE_UI.success('Préstamo Finalizado', data.message, 0).then(() => {
+                    toggleModal('modalFinalizarPrestamo');
+                    cargarPrestamos();
+                });
             } else {
-                alert('Error: ' + data.message);
+                SIGMADE_UI.error('No se pudo finalizar', data.message);
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Error al finalizar el préstamo.');
+            SIGMADE_UI.error('Error', 'No se pudo contactar al servidor para finalizar el préstamo.');
         });
 };
 
@@ -735,25 +738,29 @@ function cargarEventos() {
 }
 
 window.eliminarEvento = function (id) {
-    if (confirm('¿Estás seguro de eliminar este evento?')) {
-        const formData = new URLSearchParams();
-        formData.append('id', id);
+    SIGMADE_UI.confirm('¿Eliminar evento?', 'Esta acción borrará el evento permanentemente. ¿Deseas continuar?', 'Sí, eliminar')
+    .then((result) => {
+        if (result.isConfirmed) {
+            const formData = new URLSearchParams();
+            formData.append('id', id);
 
-        fetch('CRUD/eliminarEvento.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: formData.toString()
-        })
+            fetch('CRUD/eliminarEvento.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: formData.toString()
+            })
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
                     cargarEventos();
-                    alert('Evento eliminado');
+                    SIGMADE_UI.success('¡Hecho!', 'El evento ha sido eliminado.', 1500);
                 } else {
-                    alert(data.message);
+                    SIGMADE_UI.error('Error', data.message);
                 }
-            });
-    }
+            })
+            .catch(() => SIGMADE_UI.error('Error de red', 'No se pudo eliminar el evento.'));
+        }
+    });
 };
 
 // ========== FUNCIONES PARA USUARIOS ==========
@@ -799,9 +806,12 @@ window.mostrarTablaUsuarios = function () {
 };
 
 window.eliminarUsuario = function (id) {
-    if (confirm('¿Estás seguro de eliminar este usuario?')) {
-        window.location.href = `CRUD/eliminarUsuario.php?id=${id}`;
-    }
+    SIGMADE_UI.confirm('¿Eliminar usuario?', 'Se borrarán todos los registros asociados a este usuario. ¿Deseas continuar?', 'Sí, eliminar permanentemente')
+    .then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = `CRUD/eliminarUsuario.php?id=${id}`;
+        }
+    });
 };
 
 // ========== FUNCIONES PARA DISCIPLINAS ==========

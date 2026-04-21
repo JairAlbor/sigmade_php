@@ -159,9 +159,12 @@ window.abrirModalEdicion = function (id, nombre, id_dis, estado, tipo, disp) {
  * Elimina un material con confirmación
  */
 window.eliminarMaterial = function (id) {
-    if (confirm('¿Estás seguro de que deseas eliminar este material? Esta acción no se puede deshacer.')) {
-        window.location.href = `CRUD/eliminarMat.php?id=${id}`;
-    }
+    SIGMADE_UI.confirm('¿Eliminar material?', 'Esta acción no se puede deshacer. El material será borrado del catálogo permanentemente.', 'Sí, eliminar')
+    .then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = `CRUD/eliminarMat.php?id=${id}`;
+        }
+    });
 };
 
 /**

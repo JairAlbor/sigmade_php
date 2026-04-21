@@ -230,9 +230,22 @@ function registrarReserva() {
     const fin = document.getElementById('fechaFinReserva').value;
     const motivo = document.getElementById('motivoReserva').value;
 
-    if (!espacioId) return alert('Debes seleccionar una cancha');
-    if (!inicio || !fin || !motivo) return alert('Campos incompletos');
-    if (!currentUserId) return alert('Error de sesión');
+    if (!espacioId) {
+        SIGMADE_UI.warning('Cancha no seleccionada', 'Por favor, elige una cancha para continuar.');
+        return;
+    }
+    if (!inicio || !fin || !motivo) {
+        SIGMADE_UI.warning('Campos incompletos', 'Rellena todos los campos para solicitar la reserva.');
+        return;
+    }
+    if (new Date(fin) <= new Date(inicio)) {
+        SIGMADE_UI.error('Fechas inválidas', 'La fecha de fin debe ser posterior a la de inicio.');
+        return;
+    }
+    if (!currentUserId) {
+        SIGMADE_UI.error('Error de sesión', 'No se detectó el usuario. Por favor inicia sesión.');
+        return;
+    }
 
     fetch('CRUD/registrarReserva.php', {
         method: 'POST',
@@ -248,11 +261,23 @@ function registrarReserva() {
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                alert('Reserva solicitada correctamente');
-                closeModalReserva();
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Reserva Solicitada!',
+                    text: 'Tu solicitud ha sido enviada al administrador.',
+                    confirmButtonColor: '#a82035'
+                }).then(() => closeModalReserva());
             } else {
-                alert(data.message);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'No se pudo reservar',
+                    text: data.message,
+                    confirmButtonColor: '#a82035'
+                });
             }
+        })
+        .catch(() => {
+            Swal.fire({ icon: 'error', title: 'Error de red', text: 'No se pudo conectar con el servidor', confirmButtonColor: '#a82035' });
         });
 }
 
@@ -332,24 +357,32 @@ function cargarHistorial(userId) {
 }
 
 function cancelarPrestamo(prestamoId) {
-    if (!confirm('¿Estás seguro de que deseas cancelar esta solicitud?')) return;
-
-    fetch('CRUD/cancelarPrestamoEstudiante.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prestamo_id: prestamoId, usuario_id: currentUserId })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            alert(data.message);
-            cargarHistorial(currentUserId);
-            verificarAdeudos(currentUserId);
-        } else {
-            alert('Error: ' + data.message);
+    SIGMADE_UI.confirm('¿Deseas cancelar?', 'Esta acción retirará tu solicitud de préstamo. No se puede deshacer.', 'Sí, cancelar')
+    .then((result) => {
+        if (result.isConfirmed) {
+            fetch('CRUD/cancelarPrestamoEstudiante.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prestamo_id: prestamoId, usuario_id: currentUserId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    SIGMADE_UI.success('¡Cancelado!', data.message, 2000).then(() => {
+                        if (typeof cargarHistorial === 'function') cargarHistorial(currentUserId);
+                        else if (typeof cargarHistorialUsuario === 'function') cargarHistorialUsuario(currentUserId);
+                        verificarAdeudos(currentUserId);
+                    });
+                } else {
+                    SIGMADE_UI.error('Error', data.message);
+                }
+            })
+            .catch(err => {
+                console.error("Error al cancelar préstamo: ", err);
+                SIGMADE_UI.error('Error de red', 'No se pudo procesar la cancelación.');
+            });
         }
-    })
-    .catch(err => console.error("Error al cancelar préstamo: ", err));
+    });
 }
 
 // ======= VERIFICAR ADEUDOS ========

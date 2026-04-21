@@ -53,11 +53,7 @@
                     
                     <button id="login" type="submit" class="sg-btn-p btn-submit-full" style="background: linear-gradient(135deg, var(--crimson) 0%, var(--crimson-light) 100%); color: var(--off-white); border: none; padding: 14px; border-radius: 8px; font-weight: 600; font-size: 16px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; margin-top: 2rem; width: 100%; box-shadow: 0 4px 10px rgba(168, 32, 53, 0.3);">Iniciar Sesión</button>
                     
-                    <?php if (isset($_GET['error'])): ?>
-                        <div style="margin-top: 15px; color: #ef4444; font-size: 14px; background: rgba(220, 38, 38, 0.1); padding: 10px; border-radius: 6px; border: 1px solid rgba(220, 38, 38, 0.3);">
-                            Credenciales incorrectas.
-                        </div>
-                    <?php endif; ?>
+                    <div id="error-message" style="display:none; margin-top: 15px; color: #ef4444; font-size: 14px; background: rgba(220, 38, 38, 0.1); padding: 10px; border-radius: 6px; border: 1px solid rgba(220, 38, 38, 0.3);"></div>
                 </form>
                 
                 <div class="sg-switch-text">
@@ -127,6 +123,56 @@
     <script src="modal-js/usuarios.js?v=<?php echo time(); ?>"></script>
     <script>
         lucide.createIcons();
+
+        // Manejar Login por AJAX
+        document.getElementById('formLogin').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('login');
+            const originalText = btn.innerText;
+            const formData = new FormData(this);
+            
+            btn.disabled = true;
+            btn.innerText = 'Verificando...';
+
+            fetch('CRUD/procesarLogin.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.innerText = originalText;
+
+                if (data.status === 'success') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Acceso Correcto!',
+                        text: data.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = 'index.php';
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Fallo al iniciar sesión',
+                        text: data.message,
+                        confirmButtonColor: '#a82035'
+                    });
+                }
+            })
+            .catch(err => {
+                btn.disabled = false;
+                btn.innerText = originalText;
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de conexión',
+                    text: 'No se pudo contactar con el servidor.',
+                    confirmButtonColor: '#a82035'
+                });
+            });
+        });
     </script>
 
 </body>

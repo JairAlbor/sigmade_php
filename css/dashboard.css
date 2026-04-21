@@ -59,9 +59,9 @@
 
 /* Estados manejados por JavaScript para Adeudos  */
 .adeudos-card.state-success {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.1) 100%);
-    border-color: rgba(16, 185, 129, 0.3);
-    box-shadow: inset 0 0 30px rgba(16, 185, 129, 0.05);
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(5, 150, 105, 0.15) 100%);
+    border-color: rgba(16, 185, 129, 0.5);
+    box-shadow: inset 0 0 40px rgba(16, 185, 129, 0.1);
 }
 .adeudos-card.state-success .check-icon {
     color: #10b981 !important;
@@ -79,8 +79,8 @@
 }
 
 [data-theme="light"] .adeudos-card.state-success {
-    background: #d1fae5;
-    border-color: #a7f3d0;
+    background: #bbf7d0;
+    border-color: #86efac;
 }
 [data-theme="light"] .adeudos-card.state-success .adeudos-title, 
 [data-theme="light"] .adeudos-card.state-success .adeudos-subtext {

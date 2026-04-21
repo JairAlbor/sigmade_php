@@ -783,7 +783,8 @@
   <script>
     lucide.createIcons();
   </script>
-  <script src="modal-js/modalAdmin.js"></script>
+  <script src="js/ui_utils.js?v=<?php echo time(); ?>"></script>
+  <script src="modal-js/modalAdmin.js?v=<?php echo time(); ?>"></script>
 </body>
 
 </html>

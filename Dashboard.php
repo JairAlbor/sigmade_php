@@ -261,6 +261,7 @@
 <script>
   const currentUserId = <?php echo isset($_SESSION['user_id']) ? $_SESSION['user_id'] : 'null'; ?>;
 </script>
+<script src="js/ui_utils.js?v=<?php echo time(); ?>"></script>
 <script src="modal-js/modal-dashboard.js?v=<?php echo time(); ?>"></script>
 </section>
   </body>
