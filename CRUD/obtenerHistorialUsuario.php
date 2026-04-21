@@ -15,6 +15,7 @@ $sql = "SELECT
     p.id AS prestamo_id,
     GROUP_CONCAT(m.nombre SEPARATOR ', ') AS materiales,
     DATE(p.fecha_solicitud) AS fecha_solicitud,
+    DATE(p.fecha_inicio) AS fecha_inicio,
     DATE(p.fecha_limite) AS fecha_limite,
     p.estado_general
 FROM prestamo p

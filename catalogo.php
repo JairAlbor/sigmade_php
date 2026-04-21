@@ -44,10 +44,6 @@
         <!-- Right Side: User Menu / Login -->
         <div class="top-bar-user">
             <?php if (isset($_SESSION['usuario_nombre'])) { ?>
-            <div class="notification-wrapper">
-                <i data-lucide="bell" class="icon-bell"></i>
-                <span class="notification-dot"></span>
-            </div>
             <!-- Pill de usuario -->
             <div class="user-pill">
                 <div class="user-avatar">

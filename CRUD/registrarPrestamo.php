@@ -18,19 +18,14 @@ $usuario_id = mysqli_real_escape_string($conn, $usuario_id);
 $fecha_inicio = mysqli_real_escape_string($conn, $fecha_inicio);
 $fecha_limite = mysqli_real_escape_string($conn, $fecha_limite);
 
-// Verificar si el usuario ya tiene un préstamo activo
-$check_active = mysqli_query($conn, "SELECT id FROM prestamo WHERE usuario_id = $usuario_id AND estado_general IN ('Activo', 'Prestado', 'Pendiente', 'Aprobado')");
-if (mysqli_num_rows($check_active) > 0) {
-    echo json_encode(['success' => false, 'message' => 'El usuario ya tiene un préstamo activo o pendiente. Debe finalizarlo antes de solicitar otro.']);
-    exit;
-}
+// La verificación de préstamo activo fue retirada para permitir el sistema de reservas y préstamos concurrentes (siempre que no choquen fechas)
 
 // Verificar choques de fecha/hora para cada material
 foreach ($materiales as $material_id) {
     $mid = mysqli_real_escape_string($conn, $material_id);
     
     // Primero validamos si el material tiene estado físico funcional
-    $check_fisico = mysqli_query($conn, "SELECT id, nombre, estado FROM material WHERE id = $mid AND estado != 'Roto' AND estado != 'Mantenimiento'");
+    $check_fisico = mysqli_query($conn, "SELECT id, nombre, estado, codigo_material FROM material WHERE id = $mid AND estado != 'Roto' AND estado != 'Mantenimiento'");
     if (mysqli_num_rows($check_fisico) === 0) {
         echo json_encode(['success' => false, 'message' => "El material #$mid no se encuentra en condiciones óptimas para préstamo"]);
         exit;
@@ -64,20 +59,22 @@ if (mysqli_query($conn, $sql)) {
     foreach ($materiales as $material_id) {
         $mid = mysqli_real_escape_string($conn, $material_id);
 
-        // Insertar detalle del préstamo
-        $sql_detalle = "INSERT INTO detalle_prestamo (prestamo_id, material_id) 
-                        VALUES ($prestamo_id, $mid)";
+        // Insertar detalle del préstamo con código y nombre (historización)
+        // Volvemos a consultar o usamos caché. Es más seguro consultarlo rápido.
+        $m_res = mysqli_query($conn, "SELECT nombre, codigo_material FROM material WHERE id = $mid");
+        $m_data = mysqli_fetch_assoc($m_res);
+        $nombre_mat = mysqli_real_escape_string($conn, $m_data['nombre']);
+        $codigo_mat = mysqli_real_escape_string($conn, $m_data['codigo_material']);
+
+        $sql_detalle = "INSERT INTO detalle_prestamo (prestamo_id, material_id, codigo_articulo, nombre_articulo) 
+                        VALUES ($prestamo_id, $mid, '$codigo_mat', '$nombre_mat')";
         if (!mysqli_query($conn, $sql_detalle)) {
             $success = false;
             break;
         }
 
-        // Marcar material como Prestado en el inventario temporalmente reservado
-        $sql_update = "UPDATE material SET disponible = 'Prestado' WHERE id = $mid";
-        if (!mysqli_query($conn, $sql_update)) {
-            $success = false;
-            break;
-        }
+        // Nota: Ya no se marca el material físico como 'Prestado' de inmediato,
+        // dependemos del choque de fechas (estado en la tabla prestamo) para la disponibilidad.
     }
 
     if ($success) {

@@ -27,14 +27,14 @@
 
 /* Tarjeta Grande de Adeudos */
 .adeudos-card {
-    background: linear-gradient(135deg, rgba(var(--bg-primary-rgb), 0.8) 0%, rgba(var(--bg-secondary-rgb), 0.9) 100%);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(139, 26, 43, 0.3);
+    background: linear-gradient(135deg, rgba(20, 20, 20, 0.9) 0%, rgba(45, 15, 20, 0.95) 100%);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(220, 38, 38, 0.4);
     border-radius: 1.5rem;
     padding: 3rem;
     color: var(--off-white);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 0 50px rgba(139, 26, 43, 0.1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7), inset 0 0 60px rgba(220, 38, 38, 0.15);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -46,7 +46,7 @@
 .adeudos-card::before {
     content: '';
     position: absolute; inset: 0; pointer-events: none;
-    background: radial-gradient(circle at center, rgba(168, 32, 53, 0.1) 0%, transparent 60%);
+    background: radial-gradient(circle at top right, rgba(220, 38, 38, 0.15) 0%, transparent 60%);
     animation: pulseGlow 6s infinite alternate;
 }
 [data-theme="light"] .adeudos-card {
@@ -56,6 +56,45 @@
     color: rgb(var(--text-primary-rgb));
 }
 [data-theme="light"] .adeudos-card::before { background: none; }
+
+/* Estados manejados por JavaScript para Adeudos  */
+.adeudos-card.state-success {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.1) 100%);
+    border-color: rgba(16, 185, 129, 0.3);
+    box-shadow: inset 0 0 30px rgba(16, 185, 129, 0.05);
+}
+.adeudos-card.state-success .check-icon {
+    color: #10b981 !important;
+    filter: drop-shadow(0 0 15px rgba(16, 185, 129, 0.4));
+}
+
+.adeudos-card.state-warning {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(217, 119, 6, 0.1) 100%);
+    border-color: rgba(245, 158, 11, 0.3);
+    box-shadow: inset 0 0 30px rgba(245, 158, 11, 0.05);
+}
+.adeudos-card.state-warning .check-icon {
+    color: #f59e0b !important;
+    filter: drop-shadow(0 0 15px rgba(245, 158, 11, 0.4));
+}
+
+[data-theme="light"] .adeudos-card.state-success {
+    background: #d1fae5;
+    border-color: #a7f3d0;
+}
+[data-theme="light"] .adeudos-card.state-success .adeudos-title, 
+[data-theme="light"] .adeudos-card.state-success .adeudos-subtext {
+    color: #065f46;
+}
+
+[data-theme="light"] .adeudos-card.state-warning {
+    background: #fef3c7;
+    border-color: #fde68a;
+}
+[data-theme="light"] .adeudos-card.state-warning .adeudos-title, 
+[data-theme="light"] .adeudos-card.state-warning .adeudos-subtext {
+    color: #92400e;
+}
 
 .check-icon {
     width: 5rem; height: 5rem; font-size: 4rem;
@@ -149,3 +188,192 @@
     background: rgba(var(--bg-secondary-rgb), 0.97);
     border-color: rgba(var(--text-primary-rgb), 0.15) !important;
 }
+/* =======================================================
+   CUSTOM SELECT DROPDOWN PARA MODALES
+   ======================================================= */
+.custom-dropdown-wrapper {
+    position: relative;
+    width: 100%;
+}
+.custom-dropdown-trigger {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 18px;
+    background: rgba(var(--bg-primary-rgb), 0.7);
+    border: 1px solid rgba(var(--text-primary-rgb), 0.2);
+    border-radius: 8px;
+    color: var(--off-white);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+.custom-dropdown-trigger:hover {
+    border-color: var(--crimson-light);
+    background: rgba(var(--bg-secondary-rgb), 0.9);
+}
+[data-theme="light"] .custom-dropdown-trigger {
+    background: #fff;
+    color: #333;
+    border-color: #ccc;
+}
+.custom-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    max-height: 400px;
+    overflow-y: auto;
+    background: rgba(43, 31, 33, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(var(--text-primary-rgb), 0.2);
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    padding: 15px;
+    z-index: 1000;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    transition: all 0.3s ease;
+}
+[data-theme="light"] .custom-dropdown-menu {
+    background: #fdfdfd;
+    border-color: #ccc;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+.hidden-dropdown {
+    display: none !important;
+}
+/* =======================================================
+   GRID DE SELECCIÓN DE MATERIALES (MODALES)
+   ======================================================= */
+.material-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    padding: 5px;
+}
+
+.material-card {
+    position: relative;
+    background: rgba(var(--bg-secondary-rgb), 0.2);
+    border: 1px solid rgba(var(--text-primary-rgb), 0.1);
+    border-radius: 12px;
+    overflow: hidden; /* prevents image bleeding out */
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0;
+    gap: 0;
+    height: 100%;
+}
+
+.material-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--crimson-light);
+    background: rgba(var(--bg-secondary-rgb), 0.4);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.material-card.selected {
+    border-color: var(--crimson-light);
+    background: rgba(139, 26, 43, 0.12);
+    box-shadow: 0 0 15px rgba(139, 26, 43, 0.2);
+}
+
+.material-card-img-wrapper {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4/3;
+    border-radius: 0;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: rgba(0,0,0,0.2);
+}
+
+.material-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.material-card:hover .material-card-img {
+    transform: scale(1.08);
+}
+
+.material-card-info {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 8px;
+    flex: 1;
+}
+
+.material-card-name {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--off-white);
+    line-height: 1.3;
+}
+
+.material-card-meta {
+    font-size: 0.9rem;
+    color: rgba(var(--text-primary-rgb), 0.6);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.material-card-checkbox {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    transition: all 0.2s ease;
+}
+
+.material-card.selected .material-card-checkbox {
+    background: var(--crimson-light);
+    border-color: var(--crimson-light);
+    transform: scale(1.1);
+}
+
+.material-card-checkbox i {
+    color: white;
+    font-size: 13px;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.2s ease;
+}
+
+.material-card.selected .material-card-checkbox i {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Esconder el input real pero mantenerlo funcional */
+.material-card input[type="checkbox"],
+.material-card input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0; width: 0;
+}
+
+[data-theme="light"] .material-card {
+    background: rgba(255,255,255,0.7);
+    border-color: rgba(0,0,0,0.05);
+}
+[data-theme="light"] .material-card-name { color: #333; }
+[data-theme="light"] .material-card.selected { background: rgba(139, 26, 43, 0.05); }

@@ -36,10 +36,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 
+    // Obtener nombre de disciplina para el código
+    $res_disc = mysqli_query($conn, "SELECT nombre FROM disciplina WHERE id = '$disciplina'");
+    $disc_nombre = ($row_disc = mysqli_fetch_assoc($res_disc)) ? $row_disc['nombre'] : "GEN";
+
     $inserciones_exitosas = 0;
     for ($i = 0; $i < $cantidad; $i++) {
         $sql = "INSERT INTO material (nombre, disciplina_id, tipoMaterial, estado, disponible, foto_url, descripcion) VALUES ('$nombre', '$disciplina', '$tipoMaterial', '$estado', '$disponibilidad', $foto_url_sql, '$descripcion')";
         if (mysqli_query($conn, $sql)) {
+            $nuevo_id = mysqli_insert_id($conn);
+            $nom_code = strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $nombre), 0, 3));
+            $disc_code = strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $disc_nombre), 0, 3));
+            if (empty($disc_code)) $disc_code = "GEN";
+            $codigo = $nom_code . "-" . $disc_code . "-" . str_pad($nuevo_id, 3, '0', STR_PAD_LEFT);
+            mysqli_query($conn, "UPDATE material SET codigo_material = '$codigo' WHERE id = $nuevo_id");
+            
             $inserciones_exitosas++;
         }
     }

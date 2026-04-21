@@ -25,8 +25,16 @@ function openModalPrestamo() {
     const limite = new Date();
     limite.setHours(18, 0, 0, 0);
     const tzoffset = ahora.getTimezoneOffset() * 60000;
-    document.getElementById('fechaInicioPrestamo').value = (new Date(ahora - tzoffset)).toISOString().slice(0,16);
-    document.getElementById('fechaLimitePrestamo').value = (new Date(limite - tzoffset)).toISOString().slice(0,16);
+    const inputInicio = document.getElementById('fechaInicioPrestamo');
+    const inputLimite = document.getElementById('fechaLimitePrestamo');
+    inputInicio.value = (new Date(ahora - tzoffset)).toISOString().slice(0,16);
+    inputLimite.value = (new Date(limite - tzoffset)).toISOString().slice(0,16);
+
+    if (!inputInicio.dataset.listenerFixed) {
+        inputInicio.addEventListener('change', cargarMaterialesDisponibles);
+        inputLimite.addEventListener('change', cargarMaterialesDisponibles);
+        inputInicio.dataset.listenerFixed = "true";
+    }
 
     // Limpiar buscador
     const searchInput = document.getElementById('searchModalMaterial');
@@ -40,7 +48,13 @@ function closeModalPrestamo() {
     modal.style.display = 'none';
 }
 function cargarMaterialesDisponibles() {
-    fetch('CRUD/obtenerMaterialesDisponibles.php')
+    const inicio = document.getElementById('fechaInicioPrestamo').value;
+    const limite = document.getElementById('fechaLimitePrestamo').value;
+    let url = 'CRUD/obtenerMaterialesDisponibles.php?excludeCanchas=true';
+    if(inicio && limite) {
+        url += `&inicio=${encodeURIComponent(inicio)}&limite=${encodeURIComponent(limite)}`;
+    }
+    fetch(url)
         .then(res => res.json())
         .then(data => {
             _materialesCache = data;
@@ -57,26 +71,41 @@ function renderizarMateriales(data) {
         container.innerHTML = '<p style="text-align:center; color:rgba(var(--text-primary-rgb),0.5); padding:10px;"><i class="fa-solid fa-box-open"></i> No hay materiales libres disponibles</p>';
         return;
     }
+    
+    // Cambiar el contenedor para el grid
+    container.classList.add('material-grid');
+    container.classList.remove('lista-materiales-check'); // Limpiar estilos viejos si existen
+    
     container.innerHTML = data.map(m => {
         const fotoUrl = m.foto_url ? m.foto_url : 'css/logoSigmade.png';
         const codigo = m.codigo_material || `MAT-${String(m.id).padStart(5,'0')}`;
         const disciplina = m.disciplina || '';
         return `
-        <div style="margin-bottom:8px; display:flex; align-items:center; gap:10px; border-bottom: 1px solid rgba(var(--text-primary-rgb),0.08); padding-bottom: 8px;">
-            <input type="checkbox" name="materiales" value="${m.id}" id="mat_${m.id}">
-            <img src="${fotoUrl}" onerror="this.src='css/logoSigmade.png'" style="width:60px; height:50px; object-fit:cover; border-radius:6px; flex-shrink:0;">
-            <label for="mat_${m.id}" style="cursor:pointer; display:flex; flex-direction:column; flex:1;">
-                <strong style="color:var(--off-white);">${m.nombre}</strong>
-                <small style="color:rgba(var(--text-primary-rgb),0.55);">
-                    <span style="font-family:monospace; background:rgba(139,26,43,0.15); color:var(--crimson-light); padding:1px 5px; border-radius:3px; font-size:0.75rem;">${codigo}</span>
-                    ${disciplina ? ' &bull; ' + disciplina : ''}
-                    &bull; Estado: ${m.estado}
-                </small>
-            </label>
+        <div class="material-card" onclick="toggleMaterialCard(this, '${m.id}')" id="card_${m.id}">
+            <div class="material-card-checkbox">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <div class="material-card-img-wrapper">
+                <img src="${fotoUrl}" class="material-card-img" onerror="this.src='css/logoSigmade.png'">
+            </div>
+            <div class="material-card-info">
+                <div class="material-card-name">${m.nombre}</div>
+                <div class="material-card-meta">
+                    <span style="color:var(--crimson-light); font-weight:600; font-size:0.65rem;">${codigo}</span>
+                    <span>${disciplina}</span>
+                </div>
+            </div>
+            <input type="checkbox" name="materiales" value="${m.id}" id="mat_${m.id}" style="display:none;">
         </div>
         `;
     }).join('');
 }
+
+window.toggleMaterialCard = function(card, materialId) {
+    const checkbox = document.getElementById('mat_' + materialId);
+    checkbox.checked = !checkbox.checked;
+    card.classList.toggle('selected', checkbox.checked);
+};
 
 window.filtrarMaterialesEnModal = function(texto) {
     const filtrado = _materialesCache.filter(m => {
@@ -162,20 +191,38 @@ function cargarEspacios() {
                 container.innerHTML = '<p>No hay canchas libres</p>';
                 return;
             }
+            container.classList.add('material-grid');
             container.innerHTML = data.map(e => {
                 const fotoUrl = e.foto_url ? e.foto_url : 'css/logoSigmade.png';
                 return `
-                <div style="margin-bottom:10px; display:flex; align-items:center; gap:10px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
-                    <input type="radio" name="espacioRadio" value="${e.id}" id="espc_${e.id}" required>
-                    <img src="${fotoUrl}" onerror="this.src='css/logoSigmade.png'" style="width: 80px; height: 70px; object-fit: cover; border-radius: 5px;">
-                    <label for="espc_${e.id}" style="cursor: pointer; display:flex; flex-direction:column;">
-                        <strong>${e.nombre}</strong> 
-                    </label>
+                <div class="material-card" onclick="toggleEspacioCard(this, '${e.id}')" id="espcard_${e.id}">
+                    <div class="material-card-checkbox">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <div class="material-card-img-wrapper">
+                        <img src="${fotoUrl}" class="material-card-img" onerror="this.src='css/logoSigmade.png'">
+                    </div>
+                    <div class="material-card-info">
+                        <div class="material-card-name">${e.nombre}</div>
+                        <div class="material-card-meta">
+                            <span>Espacio Deportivo</span>
+                        </div>
+                    </div>
+                    <input type="radio" name="espacioRadio" value="${e.id}" id="espc_${e.id}" required style="display:none;">
                 </div>
                 `;
             }).join('');
         });
 }
+
+window.toggleEspacioCard = function(card, espacioId) {
+    const parent = card.parentElement;
+    parent.querySelectorAll('.material-card').forEach(c => c.classList.remove('selected'));
+    
+    const radio = document.getElementById('espc_' + espacioId);
+    if (radio) radio.checked = true;
+    card.classList.add('selected');
+};
 function registrarReserva() {
     const selector = document.querySelector('input[name="espacioRadio"]:checked');
     const espacioId = selector ? selector.value : null;
@@ -269,13 +316,14 @@ function cargarHistorial(userId) {
                     <td style="padding: 8px; border: 1px solid #ddd;">${p.prestamo_id}</td>
                     <td style="padding: 8px; border: 1px solid #ddd;">${p.materiales || 'N/A'}</td>
                     <td style="padding: 8px; border: 1px solid #ddd;">${p.fecha_solicitud}</td>
+                    <td style="padding: 8px; border: 1px solid #ddd;">${p.fecha_inicio}</td>
                     <td style="padding: 8px; border: 1px solid #ddd;">${p.fecha_limite}</td>
                     <td style="padding: 8px; border: 1px solid #ddd;">
                         <span class="badge ${p.estado_general === 'Pendiente' ? 'bg-warning' : (p.estado_general === 'Rechazado' ? 'bg-danger' : 'bg-primary')}">${p.estado_general}</span>
                     </td>
                     <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">
                         ${(p.estado_general === 'Pendiente' || p.estado_general === 'Aprobado') 
-                          ? `<button onclick="cancelarPrestamo(${p.prestamo_id})" style="background:transparent; border:none; color:red; cursor:pointer;" title="Cancelar Solicitud"><i class="fa-solid fa-ban"></i></button>` 
+                          ? `<button onclick="cancelarPrestamo(${p.prestamo_id})" style="background:transparent; border:none; color:var(--crimson-light); cursor:pointer;" title="Cancelar Solicitud"><i class="fa-solid fa-trash-can"></i></button>` 
                           : `<span style="color:#aaa; font-size: 0.8rem;">-</span>`}
                     </td>
                 </tr>
@@ -319,34 +367,34 @@ function verificarAdeudos(userId) {
             const subtext = document.getElementById('adeudosSubtext');
             
             if (prestamoActivo) {
-                // Cambiar diseño si hay préstamo pendiente o activo
-                card.style.backgroundColor = '#fff3cd'; /* Tono advertencia */
-                card.style.borderColor = '#ffe69c';
-                card.style.color = '#664d03';
+                // Cambiar diseño si hay préstamo pendiente o activo mediante clases CSS
+                card.classList.remove('state-success');
+                card.classList.add('state-warning');
+                // Se limpian overrides inline que bloqueaban colores
+                card.style = '';
+                title.style = '';
+                subtext.style = '';
                 
-                // Actualizar icono (usamos FontAwesome porque Lucide requiere recarga)
-                icon.outerHTML = '<i class="fa-solid fa-bell check-icon" id="adeudosIcon" style="color: #ffc107;"></i>';
+                // Actualizar icono
+                icon.outerHTML = '<i class="fa-solid fa-bell check-icon" id="adeudosIcon"></i>';
                 
                 let textoEstado = prestamoActivo.estado_general === 'Pendiente' ? 'Préstamo Solicitado (Pendiente)' : 'Préstamo en Curso';
                 title.textContent = textoEstado;
-                title.style.color = '#856404';
                 
                 subtext.innerHTML = `<strong>Material:</strong> ${prestamoActivo.materiales}<br>
                                      <strong>Límite:</strong> ${prestamoActivo.fecha_limite}`;
-                subtext.style.color = '#856404';
             } else {
-                // Restaurar o asegurar estado normal ("al día")
-                card.style.backgroundColor = '#d4edda';
-                card.style.borderColor = '#c3e6cb';
-                card.style.color = '#155724';
+                // Restaurar estado normal ("al día")
+                card.classList.remove('state-warning');
+                card.classList.add('state-success');
+                card.style = '';
+                title.style = '';
+                subtext.style = '';
                 
-                icon.outerHTML = '<i class="fa-solid fa-award check-icon" id="adeudosIcon" style="color: #28a745;"></i>';
+                icon.outerHTML = '<i class="fa-solid fa-award check-icon" id="adeudosIcon"></i>';
                 
                 title.textContent = 'Sin adeudos pendientes';
-                title.style.color = '#155724';
-                
                 subtext.textContent = 'Tu cuenta se encuentra al día.';
-                subtext.style.color = '#155724';
             }
         })
         .catch(err => console.error("Error al verificar adeudos: ", err));

@@ -8,6 +8,7 @@ $sql = "SELECT
     u.apellidos AS usuario_apellidos,
     GROUP_CONCAT(m.nombre SEPARATOR ', ') AS materiales,
     DATE(p.fecha_solicitud) AS fecha_solicitud,
+    DATE(p.fecha_inicio) AS fecha_inicio,
     DATE(p.fecha_limite) AS fecha_limite,
     p.estado_general,
     DATEDIFF(p.fecha_limite, CURDATE()) AS dias_restantes

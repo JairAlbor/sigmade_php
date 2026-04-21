@@ -40,6 +40,8 @@
     $email = $user['email'];
 $telefono = $user['telefono'];
 $creado_en = $user['created_at'];
+$confiabilidad = $user['confiabilidad'] ?? 100;
+$confColorProfile = $confiabilidad >= 80 ? '#34d399' : ($confiabilidad >= 50 ? '#fbbf24' : '#f87171');
 
 $query_activos = "SELECT COUNT(*) as activos FROM prestamo WHERE usuario_id = $userId AND estado_general IN ('Activo', 'Prestado', 'Pendiente')";
 $res_activos = mysqli_query($conn, $query_activos);
@@ -62,11 +64,6 @@ $prestamos_activos = mysqli_fetch_assoc($res_activos)['activos'];
       </ul>
 
       <div class="top-bar-user">
-        <div class="notification-wrapper">
-          <i data-lucide="bell" class="icon-bell"></i>
-          <span class="notification-dot"></span>
-        </div>
-
         <div class="user-pill">
         <div class="user-avatar">
           <i data-lucide="user" class="icon-user"></i>
@@ -110,10 +107,7 @@ $prestamos_activos = mysqli_fetch_assoc($res_activos)['activos'];
                 <i data-lucide="phone"></i>
                 <span><?php echo $telefono; ?></span>
               </div>
-              <div class="detail-item">
-                <i data-lucide="map-pin"></i>
-                <span>Ciudad de México, México</span>
-              </div>
+              
               <div class="detail-item">
                 <i data-lucide="calendar"></i>
                 <span>Fecha de nacimiento: 15 de Marzo, 1995</span>
@@ -121,7 +115,15 @@ $prestamos_activos = mysqli_fetch_assoc($res_activos)['activos'];
             </div>
           </section>
 
-          <aside class="profile-stats">
+           <aside class="profile-stats">
+            <div class="stat-card" style="border-top: 4px solid <?php echo $confColorProfile; ?>">
+              <div class="stat-header">
+                <i data-lucide="shield-check" style="color: <?php echo $confColorProfile; ?>"></i>
+                <span>Confiabilidad</span>
+              </div>
+              <span class="stat-value" style="color: <?php echo $confColorProfile; ?>"><?php echo $confiabilidad; ?>%</span>
+            </div>
+
             <div class="stat-card">
               <div class="stat-header">
                 <i data-lucide="credit-card"></i>
@@ -130,20 +132,21 @@ $prestamos_activos = mysqli_fetch_assoc($res_activos)['activos'];
               <span class="stat-value"><?php echo $prestamos_activos; ?></span>
             </div>
 
-            <div class="stat-card">
-              <div class="stat-header">
-                <i data-lucide="calendar-check"></i>
-                <span>Eventos asistidos</span>
-              </div>
-              <span class="stat-value"></span>
-            </div>
 
             <div class="stat-card">
               <div class="stat-header">
                 <i data-lucide="medal"></i>
-                <span>Puntos acumulados</span>
+                <span>Prestamos realizados</span>
               </div>
-              <span class="stat-value">350</span>
+              <span class="stat-value"><?php 
+              include("CRUD/conexion.php");
+              //Codigo para imprimir el numero total de prestamos realizados por el usuario
+              $query_prestamos = "SELECT COUNT(*) as total FROM prestamo WHERE usuario_id = $userId";
+              $res_prestamos = mysqli_query($conn, $query_prestamos);
+
+              $total_prestamos = mysqli_fetch_assoc($res_prestamos)['total'];
+              echo $total_prestamos;
+              ?></span>
             </div>
           </aside>
         </div>
@@ -252,6 +255,15 @@ $prestamos_activos = mysqli_fetch_assoc($res_activos)['activos'];
             <div class="form-group">
               <label><i class="fa-solid fa-phone"></i> Teléfono</label>
               <input type="tel" id="ep_telefono" name="telefono" value="<?php echo htmlspecialchars($telefono); ?>" pattern="[0-9]{10}">
+            </div>
+          </fieldset>
+
+          <fieldset class="profile-form-section">
+            <legend>Seguridad</legend>
+
+            <div class="form-group">
+              <label><i class="fa-solid fa-lock"></i> Nueva Contraseña <span style="font-size:0.8rem; color:#888;">(Déjalo en blanco para no cambiarla)</span></label>
+              <input type="password" id="ep_password" name="password" placeholder="Mínimo 8 caracteres" minlength="8">
             </div>
           </fieldset>
 

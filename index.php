@@ -8,6 +8,10 @@
     <link rel="icon" type="image/png" href="css/logoSigmade.png">
     <title>SIGMADE | Sistema de Préstamos</title>
     <link rel="stylesheet" href="css/cssNuevo.css?v=<?php echo time(); ?>">
+    <?php if (isset($_SESSION['rol'])): ?>
+        <link rel="stylesheet" href="css/style.css?v=<?php echo time(); ?>">
+        <link rel="stylesheet" href="css/navBar.css?v=<?php echo time(); ?>">
+    <?php endif; ?>
     <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700&family=Bebas+Neue&display=swap"
         rel="stylesheet">
     <!-- theme.js debe ir ANTES del body para evitar destellos de color no deseados -->
@@ -19,38 +23,36 @@
 </head>
 
 <body class="sg">
-    <nav class="sg-nav">
-       <!-- <div class="sg-nav-logo">SIG<span>MADE</span></div>-->
-       <div class="logo"><img src="css/logoSigmade.png" alt="Logo SIGMADE" width="100px" height="90px"></div>
-        <div class="sg-nav-links">
-            <a class="active" href="index.php">Inicio</a>
-
-            <?php if (!isset($_SESSION['rol'])) { ?>
+    <?php if (!isset($_SESSION['rol'])) { ?>
+        <nav class="sg-nav">
+            <div class="logo"><img src="css/logoSigmade.png" alt="Logo SIGMADE" width="100px" height="90px"></div>
+            <div class="sg-nav-links">
+                <a class="active" href="index.php">Inicio</a>
                 <a href="catalogo.php">Catálogo</a>
-            <?php } else { ?>
-                <?php if ($_SESSION['rol'] == 'Admin' || $_SESSION['rol'] == 'Operador') { ?>
-                    <a href="administacion.php">Administración</a>
-                    <a href="catalogo.php">Catálogo</a>
-                    <a href="profile.php">Perfil</a>
-                <?php } else { ?>
-                    <a href="Dashboard.php">Préstamos</a>
-                    <a href="catalogo.php">Catálogo</a>
-                    <a href="profile.php">Perfil</a>
-                <?php } ?>
-            <?php } ?>
-        </div>
-
-        <?php if (!isset($_SESSION['rol'])) { ?>
+            </div>
             <div style="display:flex; align-items:center;">
                 <button class="sg-nav-btn" onclick="window.location.href='login.php'" style="white-space:nowrap;">Iniciar Sesión</button>
                 <button class="theme-toggle-btn" title="Alternar Tema"><i data-lucide="sun"></i></button>
             </div>
-        <?php } else { ?>
-            <div style="display:flex; align-items:center; gap: 0.5rem;">
+        </nav>
+    <?php } else { ?>
+        <nav class="navbar">
+            <div class="logo"><img src="css/logoSigmade.png" alt="Logo SIGMADE" width="100px" height="90px"></div>
+            <ul class="nav-menu">
+                <li class="nav-item active">Inicio</li>
+                <?php if ($_SESSION['rol'] == 'Admin' || $_SESSION['rol'] == 'Operador') { ?>
+                    <li class="nav-item" onclick="window.location.href='administacion.php'">Administración</li>
+                <?php } else { ?>
+                    <li class="nav-item" onclick="window.location.href='Dashboard.php'">Préstamo</li>
+                <?php } ?>
+                <li class="nav-item" onclick="window.location.href='catalogo.php'">Catálogo</li>
+                <li class="nav-item" onclick="window.location.href='profile.php'">Perfil</li>
+            </ul>
+            <div class="top-bar-user">
                 <div class="user-pill">
                     <div class="user-avatar">
-          <i data-lucide="user" class="icon-user"></i>
-        </div>
+                        <i data-lucide="user" class="icon-user"></i>
+                    </div>
                     <span class="user-name">Hola, <?php echo $_SESSION['usuario_nombre']; ?></span>
                 </div>
                 <a href="extras/logout.php" class="btn-logout" title="Cerrar Sesión">
@@ -58,8 +60,8 @@
                 </a>
                 <button class="theme-toggle-btn" title="Alternar Tema"><i data-lucide="sun"></i></button>
             </div>
-        <?php } ?>
-    </nav>
+        </nav>
+    <?php } ?>
 
     <header class="sg-hero">
         <div class="sg-hero-bg"></div>
@@ -100,7 +102,7 @@
                         </div>
                         <div class="sg-info-item">
                             <i data-lucide="clock"></i>
-                            <span>Lun - Vie: 8:00 - 17:00</span>
+                            <span>Lun - Vie: 8:00 - 16:00</span>
                         </div>
                     </div>
                     <div id="map-preview" class="sg-map-container"></div>
@@ -194,8 +196,8 @@
 
         /* Script de Clima - OpenWeatherMap */
         const weatherApiKey = '090347162e580d5356d0563cc892cf18';
-        const lat = 17.8267;
-        const lon = -97.8041;
+        const lat = 19.726445;
+        const lon = -101.162219;
 
         async function fetchWeather() {
             try {

@@ -3,12 +3,11 @@ include("conexion.php"); // Tu archivo de conexión que hicimos antes
 session_start(); // ¡Importante! Esto permite que el sistema "recuerde" al usuario
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $user = $_POST['email'];
-    $pass = $_POST['password'];
+    $user = mysqli_real_escape_string($conn, $_POST['email']);
+    $pass = mysqli_real_escape_string($conn, $_POST['password']);
 
-    // Buscamos al usuario en la base de datos
-    // Nota: Aquí asumo que tu tabla se llama 'usuarios' y tiene campos 'email' y 'password'
-    $consulta = "SELECT * FROM usuario WHERE email = '$user' OR identificador = '$user' AND pass = '$pass'";
+    // Buscamos al usuario en la base de datos (texto plano por petición del usuario)
+    $consulta = "SELECT * FROM usuario WHERE (email = '$user' OR identificador = '$user') AND pass = '$pass'";
     $resultado = mysqli_query($conn, $consulta);
 
 //si hay una coincidencia, extraemos nombre y rol del usuario y los guardamos en la sesión, luego redirigimos al panel principal. Si no, lo mandamos de vuelta al login con un error

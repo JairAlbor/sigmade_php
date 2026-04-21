@@ -47,10 +47,6 @@
       <li class="nav-item" onclick="window.location.href = 'profile.php'">Perfil</li>
     </ul>
     <div class="top-bar-user">
-      <div class="notification-wrapper">
-        <i data-lucide="bell" class="icon-bell"></i>
-        <span class="notification-dot"></span>
-      </div>
       <div class="user-pill">
         <div class="user-avatar">
           <i data-lucide="user" class="icon-user"></i>
@@ -237,6 +233,7 @@
         <th>Usuario</th>
         <th>Materiales</th>
         <th>Fecha Solicitud</th>
+        <th>Fecha de Uso</th>
         <th>Fecha Límite</th>
         <th>Estado</th>
         <th>Días Restantes</th>
@@ -292,7 +289,7 @@
               </div>
               
               <!-- Lista de checkboxes -->
-              <div id="listaMateriales" class="lista-materiales-check drop-version">
+              <div id="listaMateriales" class="material-grid drop-version" style="max-height: 400px; overflow-y:auto; border:1px solid rgba(var(--text-primary-rgb),0.1); padding:15px; border-radius:12px;">
                 <p class="text-muted" style="padding:10px;">Cargando materiales...</p>
               </div>
             </div>
@@ -464,23 +461,27 @@
                   <th>Email</th>
                   <th>Teléfono</th>
                   <th>Rol</th>
+                  <th>Confiabilidad</th>
                   <th>Estado</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
               <tbody id="tablaUsuariosBody">
                 <?php
-                $sqlUsers = "SELECT id, nombre, email, rol, telefono, estatus FROM usuario";
+                $sqlUsers = "SELECT id, nombre, email, rol, telefono, estatus, confiabilidad FROM usuario";
                 $resUsers = mysqli_query($conn, $sqlUsers);
 
                 while ($user = mysqli_fetch_assoc($resUsers)) {
                   $claseEstatusActual = ($user['estatus'] == 'Activo') ? 'status-active' : 'status-inactive';
+                  $confiabilidad = (int)($user['confiabilidad'] ?? 100);
+                  $confColor = $confiabilidad >= 80 ? 'var(--spring-green)' : ($confiabilidad >= 50 ? 'var(--gold-warning)' : 'var(--crimson-light)');
 
                   echo "<tr id='user-row-" . $user['id'] . "'>";
                   echo "<td>" . htmlspecialchars($user['nombre']) . "</td>";
                   echo "<td>" . htmlspecialchars($user['email']) . "</td>";
                   echo "<td>" . htmlspecialchars($user['telefono']) . "</td>";
                   echo "<td class='user-rol-cell'>" . htmlspecialchars($user['rol']) . "</td>";
+                  echo "<td><strong style='color:$confColor;'>{$confiabilidad}%</strong></td>";
                   echo "<td>";
                   echo "<form action='CRUD/actualizarEstatusUsuario.php' method='POST' style='display:inline;'>";
                   echo "<input type='hidden' name='id' value='" . $user['id'] . "'>";
@@ -491,7 +492,7 @@
                   echo "</form>";
                   echo "</td>";
                   echo "<td class='actions'>";
-                  echo "<button class='btn-icon edit' onclick=\"mostrarFormularioEditar('" . $user['id'] . "', '" . addslashes($user['nombre']) . "', '" . $user['email'] . "', '" . $user['rol'] . "')\">";
+                  echo "<button class='btn-icon edit' onclick=\"mostrarFormularioEditar('" . $user['id'] . "', '" . addslashes($user['nombre']) . "', '" . $user['email'] . "', '" . $user['rol'] . "', " . $confiabilidad . ")\">";
                   echo "<i class='fa-solid fa-pen-to-square'></i>";
                   echo "</button>";
                   echo "<button class='btn-icon delete' onclick=\"eliminarUsuario(" . $user['id'] . ")\">";
@@ -533,6 +534,11 @@
                 <option value="Alumno">Alumno</option>
                 <option value="Docente">Entrenador</option>
               </select>
+            </div>
+            
+            <div class="form-group">
+              <label>Confiabilidad (%)</label>
+              <input type="number" name="confiabilidad" id="edit_confiabilidad" min="0" max="100" required>
             </div>
 
             <div class="form-actions-edit">

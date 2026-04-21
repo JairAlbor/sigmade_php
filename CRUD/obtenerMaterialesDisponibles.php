@@ -11,12 +11,33 @@ function generarCodigoMaterial($disciplina, $nombre, $id) {
     return "$disPart-$nomPart-$idPart";
 }
 
+$inicio = isset($_GET['inicio']) ? mysqli_real_escape_string($conn, $_GET['inicio']) : '';
+$limite = isset($_GET['limite']) ? mysqli_real_escape_string($conn, $_GET['limite']) : '';
+$excludeCanchas = isset($_GET['excludeCanchas']) && $_GET['excludeCanchas'] == 'true';
+
+// Base query for physically functional materials
 $sql = "SELECT m.id, m.nombre, m.estado, m.foto_url,
-               d.nombre AS disciplina, m.disciplina_id
+               d.nombre AS disciplina, m.disciplina_id, m.codigo_material
         FROM material m
         LEFT JOIN disciplina d ON m.disciplina_id = d.id
-        WHERE LOWER(m.disponible) = 'libre'
-        ORDER BY d.nombre, m.nombre";
+        WHERE m.estado != 'Roto' AND m.estado != 'Mantenimiento'";
+
+if ($excludeCanchas) {
+    $sql .= " AND (m.tipoMaterial != 'Cancha' OR m.tipoMaterial IS NULL)";
+}
+
+// Agregamos la subconsulta si enviaron fechas
+if (!empty($inicio) && !empty($limite)) {
+    $sql .= " AND m.id NOT IN (
+                SELECT dp.material_id 
+                FROM prestamo p
+                JOIN detalle_prestamo dp ON p.id = dp.prestamo_id
+                WHERE p.estado_general IN ('Activo', 'Prestado', 'Pendiente', 'Aprobado')
+                AND ('$inicio' < p.fecha_limite AND '$limite' > p.fecha_inicio)
+              )";
+}
+
+$sql .= " ORDER BY d.nombre, m.nombre";
 $result = mysqli_query($conn, $sql);
 $materiales = [];
 

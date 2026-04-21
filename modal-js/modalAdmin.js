@@ -217,6 +217,7 @@ function actualizarTablaPrestamos(prestamos) {
                 <td>${escapeHtml(prestamo.usuario_nombre)} ${escapeHtml(prestamo.usuario_apellidos || '')}</td>
                 <td>${escapeHtml(prestamo.materiales)}</td>
                 <td>${formatFecha(prestamo.fecha_solicitud)}</td>
+                <td>${formatFecha(prestamo.fecha_inicio)}</td>
                 <td>${formatFecha(prestamo.fecha_limite)}</td>
                 <td><span class="status-pill ${estadoClass}">${estadoTexto}</span></td>
                 <td class="${diasClass}">${diasTexto}</td>
@@ -239,8 +240,8 @@ function actualizarTablaPrestamos(prestamos) {
                             <i class="fa-solid fa-check-circle"></i>
                         </button>` : ''
             }
-                    <button class="btn-icon edit" onclick="gestionarPrestamo(${prestamo.prestamo_id})" title="Gestionar">
-                        <i class="fa-solid fa-gear"></i>
+                    <button class="btn-icon view" onclick="gestionarPrestamo(${prestamo.prestamo_id})" title="Ver Info">
+                        <i class="fa-solid fa-circle-info"></i>
                     </button>
                     ${prestamo.estado_general !== 'Activo' && prestamo.estado_general !== 'Pendiente' ?
                 `<button class="btn-icon delete" onclick="eliminarPrestamo(${prestamo.prestamo_id})" title="Eliminar">
@@ -395,7 +396,7 @@ window.gestionarPrestamo = function (id) {
             body.innerHTML = `
                 <p><strong>ID Préstamo:</strong> #${id}</p>
                 <p><strong>Usuario:</strong> ${data.usuario_nombre} ${data.usuario_apellidos}</p>
-                <p><strong>Materiales:</strong> ${data.materiales}</p>
+                <p><strong>Materiales (Desglose):</strong><br> ${data.materiales_html || data.materiales}</p>
                 <p><strong>Fecha Solicitud:</strong> ${data.fecha_solicitud}</p>
                 <p><strong>Fecha Límite:</strong> ${data.fecha_limite}</p>
                 <p><strong>Estado:</strong> <span class="status-pill status-active">${data.estado_general}</span></p>
@@ -489,23 +490,26 @@ function cargarMaterialesParaSelect() {
                 return;
             }
 
+            lista.classList.add('material-grid');
             lista.innerHTML = materiales.map(m => {
                 const fotoUrl = m.foto_url ? m.foto_url : 'css/logoSigmade.png';
+                const codigo = m.codigo_material || `MAT-${String(m.id).padStart(5,'0')}`;
                 return `
-                <div class="material-check-item" id="item-${m.id}" style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #f0f0f0; padding: 5px 0;">
-                    <input 
-                        type="checkbox" 
-                        id="mat-${m.id}" 
-                        name="materiales[]" 
-                        value="${m.id}"
-                        onchange="actualizarResumenSeleccion()"
-                        style="transform: scale(1.1); margin-right: 5px;"
-                    >
-                    <img src="${fotoUrl}" onerror="this.src='css/logoSigmade.png'" style="width: 80px; height: 70px; object-fit: cover; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                    <label for="mat-${m.id}" style="display: flex; flex-direction: column; cursor: pointer; flex: 1;">
-                        <span style="font-weight: 500;">${escapeHtml(m.nombre)}</span>
-                        <span class="material-estado-badge" style="width: fit-content; margin-top: 4px;">${escapeHtml(m.estado)}</span>
-                    </label>
+                <div class="material-card" onclick="toggleMaterialCard(this, '${m.id}')" id="card_${m.id}">
+                    <div class="material-card-checkbox">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <div class="material-card-img-wrapper">
+                        <img src="${fotoUrl}" class="material-card-img" onerror="this.src='css/logoSigmade.png'">
+                    </div>
+                    <div class="material-card-info">
+                        <div class="material-card-name">${escapeHtml(m.nombre)}</div>
+                        <div class="material-card-meta">
+                            <span style="color:var(--crimson-light); font-weight:600; font-size:0.65rem;">${codigo}</span>
+                            <span>${escapeHtml(m.estado)}</span>
+                        </div>
+                    </div>
+                    <input type="checkbox" id="mat-${m.id}" name="materiales[]" value="${m.id}" onchange="actualizarResumenSeleccion()" style="display:none;">
                 </div>
                 `;
             }).join('');
@@ -514,6 +518,15 @@ function cargarMaterialesParaSelect() {
             lista.innerHTML = '<p style="padding:10px; color:red; text-align:center;"><i class="fa-solid fa-triangle-exclamation"></i> Error al cargar materiales.</p>';
         });
 }
+
+window.toggleMaterialCard = function(card, materialId) {
+    const checkbox = document.getElementById('mat-' + materialId);
+    if (!checkbox) return;
+    checkbox.checked = !checkbox.checked;
+    card.classList.toggle('selected', checkbox.checked);
+    // Disparar evento para actualizar resumen
+    actualizarResumenSeleccion();
+};
 
 /**
  * Actualiza el resumen de materiales seleccionados
@@ -745,12 +758,13 @@ window.eliminarEvento = function (id) {
 
 // ========== FUNCIONES PARA USUARIOS ==========
 
-window.mostrarFormularioEditar = function (id, nombre, email, rol) {
+window.mostrarFormularioEditar = function (id, nombre, email, rol, confiabilidad) {
     const campos = {
         'edit_id_usuario': id,
         'edit_nombre': nombre,
         'edit_email': email,
-        'edit_rol': rol
+        'edit_rol': rol,
+        'edit_confiabilidad': confiabilidad
     };
 
     Object.entries(campos).forEach(([elementId, valor]) => {

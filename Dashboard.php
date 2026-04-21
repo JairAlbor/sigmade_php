@@ -33,11 +33,6 @@
   </ul>
 
   <div class="top-bar-user">
-    <div class="notification-wrapper">
-      <i data-lucide="bell" class="icon-bell"></i>
-      <span class="notification-dot"></span>
-    </div>
-
       <div class="user-pill">
         <div class="user-avatar">
           <i data-lucide="user" class="icon-user"></i>
@@ -138,10 +133,14 @@
         <!-- LISTA DE MATERIALES -->
         <div class="form-group custom-dropdown-group">
           <label><i class="fa-solid fa-boxes-stacked"></i> Materiales Disponibles:</label>
-          <div id="listaMaterialesDisponibles" class="lista-materiales-check drop-version" 
-               style="max-height: 200px; overflow-y:auto; border:1px solid rgba(var(--text-primary-rgb),0.1); 
-                      background:rgba(var(--bg-primary-rgb),0.5); padding:10px; margin-bottom:10px; border-radius:8px;">
-            Cargando...
+          <div class="custom-dropdown-wrapper">
+            <div class="custom-dropdown-trigger" onclick="this.nextElementSibling.classList.toggle('hidden-dropdown')">
+              <span>Desplegar Catálogo de Materiales...</span>
+              <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <div id="listaMaterialesDisponibles" class="material-grid drop-version custom-dropdown-menu hidden-dropdown">
+              Cargando...
+            </div>
           </div>
         </div>
 
@@ -178,8 +177,14 @@
       <form id="formReserva" class="form-diseno" onsubmit="event.preventDefault(); registrarReserva();">
         <div class="form-group custom-dropdown-group">
           <label>Cancha a Reservar:</label>
-          <div id="listaEspaciosDisponibles" class="lista-materiales-check drop-version" style="max-height: 150px; overflow-y:auto; border:1px solid #ccc; padding:10px; margin-bottom:10px;">
-            Cargando...
+          <div class="custom-dropdown-wrapper">
+            <div class="custom-dropdown-trigger" onclick="this.nextElementSibling.classList.toggle('hidden-dropdown')">
+              <span>Desplegar Opciones de Canchas...</span>
+              <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <div id="listaEspaciosDisponibles" class="material-grid drop-version custom-dropdown-menu hidden-dropdown">
+              Cargando...
+            </div>
           </div>
         </div>
         <div class="form-grid">
@@ -238,6 +243,7 @@
               <th>ID</th>
               <th>Materiales</th>
               <th>Solicitud</th>
+              <th>Inicio</th>
               <th>Límite</th>
               <th>Estado</th>
               <th>Acciones</th>

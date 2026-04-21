@@ -124,8 +124,7 @@
     </main>
 
     <!-- Script original o inyectado para guardar usuarios si el JS que lo lanza estuviera fallando en carga -->
-    <script src="modal-js/alertas.js"></script>
-    <script src="modal-js/usuarios.js"></script>
+    <script src="modal-js/usuarios.js?v=<?php echo time(); ?>"></script>
     <script>
         lucide.createIcons();
     </script>
